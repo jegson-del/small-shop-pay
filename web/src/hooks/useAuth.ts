@@ -32,15 +32,16 @@ export function useLoginMutation(
   options?: UseMutationOptions<LoginResponse, Error, { email: string; password: string }>
 ) {
   const queryClient = useQueryClient();
+  const userOnSuccess = options?.onSuccess;
 
   return useMutation({
     mutationFn: ({ email, password }) => authApi.login(email, password),
+    ...options,
     onSuccess: (data, variables, onMutateResult, context) => {
       tokenStore.setTokens(data.access_token, data.refresh_token);
       queryClient.invalidateQueries({ queryKey: authKeys.me });
-      options?.onSuccess?.(data, variables, onMutateResult, context);
+      userOnSuccess?.(data, variables, onMutateResult, context);
     },
-    ...options,
   });
 }
 
@@ -61,13 +62,14 @@ export function useRegisterMutation(
 /** Logout mutation – clears tokens and invalidates me */
 export function useLogoutMutation(options?: UseMutationOptions<void, Error, void>) {
   const queryClient = useQueryClient();
+  const userOnSuccess = options?.onSuccess;
 
   return useMutation({
     mutationFn: authApi.logout,
+    ...options,
     onSuccess: (data, variables, onMutateResult, context) => {
       queryClient.removeQueries({ queryKey: authKeys.me });
-      options?.onSuccess?.(data, variables, onMutateResult, context);
+      userOnSuccess?.(data, variables, onMutateResult, context);
     },
-    ...options,
   });
 }
