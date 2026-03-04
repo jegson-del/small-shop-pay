@@ -1,0 +1,25 @@
+---
+description: Test writing rules - core functionality, lean assertions
+globs: "**/tests/**/*.php","**/*.test.ts","**/*.spec.ts"
+alwaysApply: false
+---
+
+# Test Writing Rules
+
+## Scope
+
+- **Test only core and important functionality** – critical business logic, auth, payments, validation
+- **Minimal assertions** – assert what matters for the behavior; avoid redundant checks
+
+## Guidelines
+
+1. **One success path + key failure paths** – do not exhaustively test every validation branch unless each is distinct
+2. **Consolidate similar cases** – use data providers for "same outcome, different input" (e.g. invalid credentials: unknown email vs wrong password)
+3. **Core assertions only** – e.g. assert `$result->email` or `$output->accessToken`; skip asserting every property
+4. **Domain logic** – test `isValid()`, `hasStripeConnected()` etc. with minimal, representative cases
+
+## Avoid
+
+- Tests for every validation rule when one representative case suffices
+- Duplicate assertions across tests
+- Testing framework behavior or trivial getters

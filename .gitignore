@@ -1,0 +1,47 @@
+# Monorepo root
+.env
+.env.local
+.env.*.local
+node_modules/
+
+# Backend (Laravel)
+backend/vendor/
+backend/node_modules/
+backend/.env
+backend/storage/*.key
+backend/.phpunit.result.cache
+backend/Homestead.json
+backend/Homestead.yaml
+backend/auth.json
+backend/.styleci.yml
+
+# Web (React/Vite)
+web/node_modules/
+web/dist/
+web/.env
+web/.env.local
+web/.env.*.local
+
+# Mobile (React Native)
+mobile/node_modules/
+mobile/.expo/
+mobile/dist/
+mobile/npm-debug.*
+mobile/*.jks
+mobile/*.p8
+mobile/*.p12
+mobile/*.key
+mobile/*.mobileprovision
+mobile/ios/Pods/
+mobile/ios/*.xcworkspace/xcuserdata/
+mobile/android/.gradle/
+mobile/android/app/build/
+mobile/android/build/
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
