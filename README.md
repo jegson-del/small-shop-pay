@@ -48,6 +48,17 @@ npm install
 npx expo start  # or react-native run-ios / run-android
 ```
 
-## Development Plan
+## Documentation
+
+- [docs/STRIPE_WEBHOOKS.md](docs/STRIPE_WEBHOOKS.md) – Stripe webhook setup
+- [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) – dev setup and troubleshooting (proxy, 404s)
+- [docs/PROGRESS.md](docs/PROGRESS.md) – completed features and API summary
+
+## Stripe configuration
+
+- **Connect & Subscription:** See `.cursor/plans/` for the full specification.
+- **Webhooks:** See [docs/STRIPE_WEBHOOKS.md](docs/STRIPE_WEBHOOKS.md).
+
+## Development plan
 
 See `.cursor/plans/` for the full specification and step-by-step guide.

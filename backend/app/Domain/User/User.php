@@ -17,12 +17,22 @@ final readonly class User
         public string $email,
         public string $passwordHash,
         public ?string $stripeAccountId = null,
+        public ?string $stripeCustomerId = null,
+        public ?string $subscriptionId = null,
+        public string $subscriptionStatus = 'none',
+        public ?DateTimeInterface $trialEnd = null,
+        public bool $appAccess = false,
         public ?DateTimeInterface $termsAcceptedAt = null,
         public ?DateTimeInterface $privacyAcceptedAt = null,
         public ?DateTimeInterface $emailVerifiedAt = null,
         public ?DateTimeInterface $createdAt = null,
         public ?DateTimeInterface $updatedAt = null,
     ) {
+    }
+
+    public function canAcceptPayments(): bool
+    {
+        return in_array($this->subscriptionStatus, ['active', 'trialing'], true) && $this->appAccess;
     }
 
     public function hasStripeConnected(): bool

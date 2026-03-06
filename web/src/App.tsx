@@ -8,6 +8,8 @@ import { RegisterPage } from '@/pages/RegisterPage';
 import { TermsPage } from '@/pages/TermsPage';
 import { PrivacyPage } from '@/pages/PrivacyPage';
 import { DashboardPage } from '@/pages/DashboardPage';
+import { SettingsPage } from '@/pages/SettingsPage';
+import { SubscriptionSuccessPage } from '@/pages/SubscriptionSuccessPage';
 
 function App() {
   return (
@@ -22,14 +24,17 @@ function App() {
         </Route>
 
         <Route
-          path="/dashboard"
+          path="/"
           element={
             <ProtectedRoute>
               <AuthLayout />
             </ProtectedRoute>
           }
         >
-          <Route index element={<DashboardPage />} />
+          <Route index element={<Navigate to="/dashboard" replace />} />
+          <Route path="dashboard" element={<DashboardPage />} />
+          <Route path="settings" element={<SettingsPage />} />
+          <Route path="subscription-success" element={<SubscriptionSuccessPage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

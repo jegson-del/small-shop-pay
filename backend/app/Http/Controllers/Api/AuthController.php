@@ -97,8 +97,12 @@ class AuthController extends Controller
             'id' => $user->id,
             'email' => $user->email,
             'stripe_account_id' => $user->stripe_account_id,
+            'stripe_customer_id' => $user->stripe_customer_id,
             'charges_enabled' => null,
             'payouts_enabled' => null,
+            'subscription_status' => $user->subscription_status ?? 'none',
+            'app_access' => (bool) ($user->app_access ?? false),
+            'trial_end' => $user->trial_end?->format('c'),
         ]);
     }
 }

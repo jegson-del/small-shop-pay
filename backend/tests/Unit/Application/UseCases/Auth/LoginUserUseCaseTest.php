@@ -31,7 +31,7 @@ class LoginUserUseCaseTest extends TestCase
 
     public function test_returns_tokens_on_valid_credentials(): void
     {
-        $user = new User('1', 'a@b.com', 'hashed', null, null, null, null, null, null);
+        $user = new User('1', 'a@b.com', 'hashed', null, null, null, 'none', null, false, null, null, null, null, null);
         $userRepo = $this->createMock(UserRepositoryInterface::class);
         $userRepo->method('findByEmail')->willReturn($user);
         $pwHasher = $this->createMock(PasswordHasherInterface::class);
@@ -64,7 +64,7 @@ class LoginUserUseCaseTest extends TestCase
 
     public static function invalidCredentialsProvider(): array
     {
-        $user = new User('1', 'a@b.com', 'hash', null, null, null, null, null, null);
+        $user = new User('1', 'a@b.com', 'hash', null, null, null, 'none', null, false, null, null, null, null, null);
         return [
             'unknown email' => [null, false],
             'wrong password' => [$user, false],

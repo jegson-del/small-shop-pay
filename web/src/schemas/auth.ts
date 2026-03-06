@@ -27,11 +27,15 @@ export const registerInputSchema = z
 export type RegisterInput = z.infer<typeof registerInputSchema>;
 
 export const userSchema = z.object({
-  id: z.number(),
+  id: z.union([z.number(), z.string()]),
   email: z.string().email(),
   stripe_account_id: z.string().nullable(),
+  stripe_customer_id: z.string().nullable().optional(),
   charges_enabled: z.boolean().nullable(),
   payouts_enabled: z.boolean().nullable(),
+  subscription_status: z.string().optional().default('none'),
+  app_access: z.boolean().optional().default(false),
+  trial_end: z.string().nullable().optional(),
 });
 
 export const loginResponseSchema = z.object({
@@ -41,7 +45,7 @@ export const loginResponseSchema = z.object({
 });
 
 export const registerResponseSchema = z.object({
-  id: z.number(),
+  id: z.union([z.number(), z.string()]),
   email: z.string().email(),
 });
 

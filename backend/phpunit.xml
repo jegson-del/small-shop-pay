@@ -31,5 +31,7 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <env name="STRIPE_SECRET_KEY" value="sk_test_placeholder"/>
+        <env name="FRONTEND_URL" value="http://localhost"/>
     </php>
 </phpunit>

@@ -9,6 +9,18 @@ import {
   type RegisterResponse,
 } from '@/schemas/auth';
 
+async function parseJsonOrThrow(res: Response, fallbackMessage: string): Promise<unknown> {
+  const text = await res.text();
+  if (!text) {
+    throw new Error(`${fallbackMessage} (API returned empty response – check backend is running and proxy points to correct port)`);
+  }
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error(`${fallbackMessage} (API returned invalid JSON – status ${res.status})`);
+  }
+}
+
 /** Login – returns tokens; caller should update tokenStore and invalidate queries */
 export async function login(email: string, password: string): Promise<LoginResponse> {
   const res = await fetch('/api/auth/login', {
@@ -17,9 +29,9 @@ export async function login(email: string, password: string): Promise<LoginRespo
     body: JSON.stringify({ email, password }),
   });
 
-  const data = await res.json();
+  const data = (await parseJsonOrThrow(res, 'Login failed')) as Record<string, unknown>;
   if (!res.ok) {
-    throw new Error(data?.message ?? 'Login failed');
+    throw new Error((data?.message as string) ?? 'Login failed');
   }
 
   return loginResponseSchema.parse(data);
@@ -38,7 +50,7 @@ export async function register(params: {
     body: JSON.stringify(params),
   });
 
-  const data = await res.json();
+  const data = (await parseJsonOrThrow(res, 'Registration failed')) as Record<string, unknown>;
   if (!res.ok) {
     throw new Error(data?.message ?? 'Registration failed');
   }
@@ -57,7 +69,7 @@ export async function refresh(): Promise<LoginResponse> {
     body: JSON.stringify({ refresh_token: refreshToken }),
   });
 
-  const data = await res.json();
+  const data = (await parseJsonOrThrow(res, 'Token refresh failed')) as Record<string, unknown>;
   if (!res.ok) {
     tokenStore.clear();
     throw new Error(data?.message ?? 'Refresh failed');
