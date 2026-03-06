@@ -6,8 +6,10 @@ return [
 
     'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
 
-    'return_url' => env('STRIPE_RETURN_URL', env('APP_URL') . '/api/stripe/return'),
+    // After Connect onboarding, Stripe redirects here. Use frontend so user lands on dashboard (not backend).
+    'return_url' => env('STRIPE_RETURN_URL', rtrim(env('FRONTEND_URL', env('APP_URL')), '/') . '/dashboard'),
 
+    // When Account Link expires, Stripe redirects here. Backend re-issues link and sends user back to Stripe.
     'refresh_url' => env('STRIPE_REFRESH_URL', env('APP_URL') . '/api/stripe/refresh'),
 
     'connect' => [

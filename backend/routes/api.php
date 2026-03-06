@@ -2,10 +2,12 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\MerchantStatusController;
+use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\StripeConnectController;
 use App\Http\Controllers\Api\StripeReturnController;
 use App\Http\Controllers\Api\StripeWebhookController;
 use App\Http\Controllers\Api\SubscriptionController;
+use App\Http\Controllers\Api\TerminalController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('webhooks/stripe', [StripeWebhookController::class, 'handle']);
@@ -30,3 +32,12 @@ Route::prefix('stripe')->group(function () {
 });
 
 Route::get('merchant/status', [MerchantStatusController::class, 'status'])->middleware('auth:sanctum');
+
+// List payments (allowed when subscription expired – sub-7 view transactions)
+Route::get('payments', [PaymentController::class, 'index'])->middleware('auth:sanctum');
+
+// Phase 3: Terminal (Tap to Pay) – require active subscription
+Route::prefix('terminal')->middleware(['auth:sanctum', 'merchant.can_accept_payments'])->group(function () {
+    Route::post('connection_token', [TerminalController::class, 'connectionToken']);
+    Route::post('payment_intent', [TerminalController::class, 'createPaymentIntent']);
+});

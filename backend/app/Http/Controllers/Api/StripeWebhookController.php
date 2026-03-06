@@ -60,6 +60,12 @@ class StripeWebhookController extends Controller
                 case 'customer.subscription.deleted':
                     $this->handleSubscriptionDeleted($event->data->object);
                     break;
+                case 'payment_intent.succeeded':
+                    $this->handlePaymentIntentSucceeded($event->data->object);
+                    break;
+                case 'payment_intent.payment_failed':
+                    $this->handlePaymentIntentFailed($event->data->object);
+                    break;
                 default:
                     // Log but do not fail for unhandled event types
                     Log::debug('Stripe webhook unhandled event', ['type' => $event->type]);
@@ -160,5 +166,71 @@ class StripeWebhookController extends Controller
 
         $this->userRepository->updateSubscriptionAppAccess($user->id, false);
         $this->userRepository->updateSubscriptionStatus($user->id, 'canceled');
+    }
+
+    /**
+     * Phase 3: Update Payment record when PaymentIntent succeeds (Connect or platform).
+     */
+    private function handlePaymentIntentSucceeded(object $paymentIntent): void
+    {
+        $id = $paymentIntent->id ?? null;
+        if (!$id) {
+            return;
+        }
+
+        $payment = \App\Models\Payment::where('stripe_payment_intent_id', $id)->first();
+        if ($payment) {
+            $payment->update(['status' => 'succeeded']);
+            Log::info('PaymentIntent succeeded', ['payment_intent_id' => $id]);
+            return;
+        }
+
+        $userId = $paymentIntent->metadata->user_id ?? null;
+        if (!$userId) {
+            Log::warning('payment_intent.succeeded: no user_id in metadata', ['payment_intent_id' => $id]);
+            return;
+        }
+
+        \App\Models\Payment::create([
+            'id' => (string) \Illuminate\Support\Str::ulid(),
+            'user_id' => $userId,
+            'stripe_payment_intent_id' => $id,
+            'amount' => (int) ($paymentIntent->amount ?? 0),
+            'currency' => strtolower((string) ($paymentIntent->currency ?? 'gbp')),
+            'status' => 'succeeded',
+        ]);
+        Log::info('PaymentIntent succeeded (created Payment)', ['payment_intent_id' => $id]);
+    }
+
+    /**
+     * Phase 3: Update Payment record when PaymentIntent fails.
+     */
+    private function handlePaymentIntentFailed(object $paymentIntent): void
+    {
+        $id = $paymentIntent->id ?? null;
+        if (!$id) {
+            return;
+        }
+
+        $payment = \App\Models\Payment::where('stripe_payment_intent_id', $id)->first();
+        if ($payment) {
+            $payment->update(['status' => 'failed']);
+            Log::info('PaymentIntent failed', ['payment_intent_id' => $id]);
+            return;
+        }
+
+        $userId = $paymentIntent->metadata->user_id ?? null;
+        if (!$userId) {
+            return;
+        }
+
+        \App\Models\Payment::create([
+            'id' => (string) \Illuminate\Support\Str::ulid(),
+            'user_id' => $userId,
+            'stripe_payment_intent_id' => $id,
+            'amount' => (int) ($paymentIntent->amount ?? 0),
+            'currency' => strtolower((string) ($paymentIntent->currency ?? 'gbp')),
+            'status' => 'failed',
+        ]);
     }
 }

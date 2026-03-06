@@ -24,6 +24,30 @@ class AuthTest extends TestCase
         $response->assertStatus(201)->assertJson(['email' => 'merchant@example.com']);
     }
 
+    public function test_register_fails_without_terms_accepted(): void
+    {
+        $response = $this->postJson('/api/auth/register', [
+            'email' => 'merchant@example.com',
+            'password' => 'SecurePass123!',
+            'terms_accepted' => false,
+            'privacy_accepted' => true,
+        ]);
+
+        $response->assertStatus(422);
+    }
+
+    public function test_register_fails_without_privacy_accepted(): void
+    {
+        $response = $this->postJson('/api/auth/register', [
+            'email' => 'merchant@example.com',
+            'password' => 'SecurePass123!',
+            'terms_accepted' => true,
+            'privacy_accepted' => false,
+        ]);
+
+        $response->assertStatus(422);
+    }
+
     public function test_login_returns_tokens(): void
     {
         User::factory()->create(['email' => 'merchant@example.com', 'password' => bcrypt('pass123')]);

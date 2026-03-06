@@ -12,7 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->alias([
+            'merchant.can_accept_payments' => \App\Http\Middleware\EnsureMerchantCanAcceptPayments::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

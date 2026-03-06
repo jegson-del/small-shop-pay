@@ -17,7 +17,9 @@ export function PricingSection() {
         <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-100 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
           <div className="text-accent font-semibold text-lg mb-3">Get started free</div>
           <p className="text-slate-600 mb-4 leading-relaxed">
-            Sign up, connect or create your stripe connect account, and start accepting payments in minutes.
+            Sign up, connect or create your Stripe Connect account, and start accepting payments in
+            minutes. <strong>14-day free trial</strong>, then <strong>£9/month</strong>—cancel
+            anytime.
           </p>
           <p className="text-slate-500 text-sm">
             No setup fee · Cancel anytime

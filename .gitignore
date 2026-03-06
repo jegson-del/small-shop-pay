@@ -23,6 +23,7 @@ web/.env.local
 web/.env.*.local
 
 # Mobile (React Native)
+mobile/.env
 mobile/node_modules/
 mobile/.expo/
 mobile/dist/

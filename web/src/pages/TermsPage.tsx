@@ -32,9 +32,11 @@ export function TermsPage() {
       <section>
         <h2 className="text-xl font-semibold text-slate-900 mt-6 mb-2">4. Subscription and fees</h2>
         <p className="text-slate-600 leading-relaxed">
-          The Service is offered under a subscription plan. Fees, trial periods, and payment terms
-          are displayed at the time of sign-up. You authorise us to charge your payment method in
-          accordance with your plan.
+          The Service is offered under a subscription plan: <strong>£9 per month</strong> (plus
+          applicable VAT if any). New users receive a <strong>14-day free trial</strong>; you will
+          not be charged until the trial ends. You may cancel at any time before the trial ends to
+          avoid being charged. Fees and trial terms are also displayed at sign-up and when starting
+          the trial. You authorise us to charge your payment method in accordance with your plan.
         </p>
       </section>
 

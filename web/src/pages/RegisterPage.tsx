@@ -26,8 +26,9 @@ export function RegisterPage() {
       <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-100 shadow-lg">
         <h1 className="text-2xl font-bold text-slate-900 mb-2">Create account</h1>
         <p className="text-slate-600 mb-6">
-          Sign up to start accepting Tap to Pay payments. By registering, you agree to our terms and
-          privacy policy.
+          Sign up to start accepting Tap to Pay payments. Subscription is £9/month after a 14-day
+          free trial—cancel anytime. By registering, you agree to our Terms and Conditions and
+          Privacy Policy.
         </p>
         <RegisterForm onSuccess={handleSuccess} />
       </div>

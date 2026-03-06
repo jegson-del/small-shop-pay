@@ -6,6 +6,9 @@ export const userSchema = z.object({
   stripe_account_id: z.string().nullable(),
   charges_enabled: z.boolean().nullable(),
   payouts_enabled: z.boolean().nullable(),
+  subscription_status: z.string().nullable().optional(),
+  app_access: z.boolean().optional(),
+  trial_end: z.string().nullable().optional(),
 });
 
 export const loginResponseSchema = z.object({

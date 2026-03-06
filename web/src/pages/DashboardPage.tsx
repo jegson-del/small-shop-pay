@@ -13,6 +13,18 @@ function useConnectStatus(enabled: boolean) {
   });
 }
 
+function useConnectAccountMutation() {
+  return useMutation({
+    mutationFn: async () => {
+      const res = await api.post<{ url: string }>('/stripe/connect/account');
+      return res;
+    },
+    onSuccess: (data) => {
+      if (data?.url) window.location.href = data.url;
+    },
+  });
+}
+
 function useSubscriptionCheckoutMutation() {
   const queryClient = useQueryClient();
 
@@ -41,11 +53,9 @@ export function DashboardPage() {
   const subscriptionActive = user?.subscription_status === 'active' || user?.subscription_status === 'trialing';
   const canStartTrial = connectComplete && !subscriptionActive;
   const trialDays = formatTrialDays(user?.trial_end);
+  const connectMutation = useConnectAccountMutation();
   const checkoutMutation = useSubscriptionCheckoutMutation();
-  const handleConnect = async () => {
-    const res = await api.post<{ url: string }>('/stripe/connect/account');
-    if (res?.url) window.location.href = res.url;
-  };
+  const handleConnect = () => connectMutation.mutate();
   const handleStartTrial = () => checkoutMutation.mutate();
 
   const stepsComplete = [connectComplete, subscriptionActive, user?.app_access].filter(Boolean).length;
@@ -99,9 +109,17 @@ export function DashboardPage() {
             {!hasStripeAccount ? (
               <button
                 onClick={handleConnect}
-                className="mt-3 inline-flex items-center gap-2 rounded-lg bg-[#635bff] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#5149e6] transition-colors"
+                disabled={connectMutation.isPending}
+                className="mt-3 inline-flex items-center gap-2 rounded-lg bg-[#635bff] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#5149e6] disabled:opacity-70 disabled:cursor-not-allowed transition-colors"
               >
-                Connect with Stripe
+                {connectMutation.isPending ? (
+                  <>
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" aria-hidden />
+                    Connecting…
+                  </>
+                ) : (
+                  'Connect with Stripe'
+                )}
               </button>
             ) : connectLoading ? (
               <p className="mt-3 text-sm text-slate-500">Checking status…</p>
@@ -110,9 +128,17 @@ export function DashboardPage() {
             ) : (
               <button
                 onClick={handleConnect}
-                className="mt-3 inline-flex items-center gap-2 rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                disabled={connectMutation.isPending}
+                className="mt-3 inline-flex items-center gap-2 rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-70 disabled:cursor-not-allowed transition-colors"
               >
-                Complete onboarding
+                {connectMutation.isPending ? (
+                  <>
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-500 border-t-transparent" aria-hidden />
+                    Redirecting…
+                  </>
+                ) : (
+                  'Complete onboarding'
+                )}
               </button>
             )}
           </div>

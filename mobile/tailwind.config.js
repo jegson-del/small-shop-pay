@@ -11,6 +11,7 @@ module.exports = {
         surface: '#F4F6FA',
         'text-primary': '#0F172A',
         'text-secondary': '#64748B',
+        error: '#DC2626',
       },
     },
   },

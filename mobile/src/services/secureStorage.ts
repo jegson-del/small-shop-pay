@@ -1,33 +1,27 @@
 /**
- * Secure storage abstraction for sensitive data (e.g. refresh_token).
- * Uses react-native-keychain for persistent, encrypted storage.
- * SOLID: Single Responsibility – storage only; no auth logic.
+ * Secure storage for sensitive data (e.g. refresh_token).
+ * Uses expo-secure-store so it works in Expo Go and in production builds.
  */
-import * as Keychain from 'react-native-keychain';
+import * as SecureStore from 'expo-secure-store';
 
-const SERVICE = 'com.smallshoppay.refresh_token';
-const KEY = 'refresh_token';
+const REFRESH_TOKEN_KEY = 'refresh_token';
 
 export const secureStorage = {
   async getRefreshToken(): Promise<string | null> {
     try {
-      const credentials = await Keychain.getGenericPassword({ service: SERVICE });
-      if (credentials && credentials.password) {
-        return credentials.password;
-      }
-      return null;
+      return await SecureStore.getItemAsync(REFRESH_TOKEN_KEY);
     } catch {
       return null;
     }
   },
 
   async setRefreshToken(token: string): Promise<void> {
-    await Keychain.setGenericPassword(KEY, token, { service: SERVICE });
+    await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, token);
   },
 
   async clearRefreshToken(): Promise<void> {
     try {
-      await Keychain.resetGenericPassword({ service: SERVICE });
+      await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
     } catch {
       // Ignore if nothing was stored
     }
