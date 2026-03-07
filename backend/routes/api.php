@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\MerchantStatusController;
+use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\StripeConnectController;
 use App\Http\Controllers\Api\StripeReturnController;
@@ -33,11 +34,14 @@ Route::prefix('stripe')->group(function () {
 
 Route::get('merchant/status', [MerchantStatusController::class, 'status'])->middleware('auth:sanctum');
 
+Route::put('profile/address', [ProfileController::class, 'updateAddress'])->middleware('auth:sanctum');
+
 // List payments (allowed when subscription expired – sub-7 view transactions)
 Route::get('payments', [PaymentController::class, 'index'])->middleware('auth:sanctum');
 
 // Phase 3: Terminal (Tap to Pay) – require active subscription
 Route::prefix('terminal')->middleware(['auth:sanctum', 'merchant.can_accept_payments'])->group(function () {
+    Route::get('config', [TerminalController::class, 'config']);
     Route::post('connection_token', [TerminalController::class, 'connectionToken']);
     Route::post('payment_intent', [TerminalController::class, 'createPaymentIntent']);
 });

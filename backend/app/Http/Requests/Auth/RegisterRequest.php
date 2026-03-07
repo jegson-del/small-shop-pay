@@ -18,6 +18,7 @@ class RegisterRequest extends FormRequest
     {
         return [
             'email' => ['required', 'email', 'max:255'],
+            'email_confirmation' => ['required', 'string', 'email', 'max:255', 'same:email'],
             'password' => ['required', 'string', 'min:8', 'max:255'],
             'terms_accepted' => ['required', 'boolean', 'accepted'],
             'privacy_accepted' => ['required', 'boolean', 'accepted'],

@@ -17,6 +17,7 @@ final readonly class User
         public string $email,
         public string $passwordHash,
         public ?string $stripeAccountId = null,
+        public ?string $terminalLocationId = null,
         public ?string $stripeCustomerId = null,
         public ?string $subscriptionId = null,
         public string $subscriptionStatus = 'none',
@@ -27,7 +28,19 @@ final readonly class User
         public ?DateTimeInterface $emailVerifiedAt = null,
         public ?DateTimeInterface $createdAt = null,
         public ?DateTimeInterface $updatedAt = null,
+        public ?string $addressLine1 = null,
+        public ?string $addressCity = null,
+        public ?string $addressPostcode = null,
+        public ?string $addressCountry = null,
     ) {
+    }
+
+    public function hasAddressComplete(): bool
+    {
+        return !empty($this->addressLine1)
+            && !empty($this->addressCity)
+            && !empty($this->addressPostcode)
+            && !empty($this->addressCountry);
     }
 
     public function canAcceptPayments(): bool

@@ -30,7 +30,10 @@ Last updated: March 2026
 - Payment model, User→payments relation
 
 ### Phase 3 – Terminal & Payments
-- **Backend:** `POST /api/terminal/connection_token` (connection token for Stripe Terminal SDK on Connect account), `POST /api/terminal/payment_intent` (create PaymentIntent for in-person; creates pending Payment record)
+- **Backend:** `GET /api/terminal/config` (returns `location_id` for Tap to Pay), `POST /api/terminal/connection_token` (connection token + location_id), `POST /api/terminal/payment_intent` (create PaymentIntent; creates pending Payment record)
+- **Terminal Location:** One per merchant, auto-created when Connect onboarding completes or lazily on first Terminal use
+- **Capabilities:** Connect accounts request `card_payments` and `transfers` at creation
+- **Gating:** Terminal requires `charges_enabled` and `payouts_enabled` on Connect account
 - **Webhooks:** `payment_intent.succeeded` and `payment_intent.payment_failed` update Payment status (or create Payment if missing)
 - **Mobile:** Take Payment screen – amount input (GBP), create PaymentIntent via API, “Ready to collect” state; Tap to Pay collection via Stripe Terminal SDK can be added in a development build
 
@@ -78,7 +81,8 @@ Last updated: March 2026
 | POST | `/api/stripe/billing-portal` | Yes | Billing Portal URL |
 | GET | `/api/merchant/status` | Yes | Mobile access check |
 | GET | `/api/payments` | Yes | List user payments (allowed when subscription expired) |
-| POST | `/api/terminal/connection_token` | Yes + merchant | Connection token for Terminal SDK |
+| GET | `/api/terminal/config` | Yes + merchant | Terminal location_id for Tap to Pay |
+| POST | `/api/terminal/connection_token` | Yes + merchant | Connection token + location_id |
 | POST | `/api/terminal/payment_intent` | Yes + merchant | Create PaymentIntent for Tap to Pay |
 | POST | `/api/webhooks/stripe` | Signed | Stripe webhooks |
 

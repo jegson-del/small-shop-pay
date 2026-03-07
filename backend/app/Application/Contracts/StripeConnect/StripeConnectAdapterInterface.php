@@ -26,4 +26,12 @@ interface StripeConnectAdapterInterface
      * @return array{charges_enabled: bool, payouts_enabled: bool}
      */
     public function getAccountStatus(string $accountId): array;
+
+    /**
+     * Create a Terminal Location for the Connect account.
+     *
+     * @param array{line1: string, city?: string, postcode?: string, country: string}|null $address Optional address; uses placeholder if null
+     * @return array{id: string}
+     */
+    public function createTerminalLocation(string $accountId, ?array $address = null): array;
 }

@@ -24,6 +24,7 @@ class User extends Authenticatable
         'email',
         'password',
         'stripe_account_id',
+        'terminal_location_id',
         'stripe_customer_id',
         'subscription_id',
         'subscription_status',
@@ -31,6 +32,10 @@ class User extends Authenticatable
         'app_access',
         'terms_accepted_at',
         'privacy_accepted_at',
+        'address_line1',
+        'address_city',
+        'address_postcode',
+        'address_country',
     ];
 
     /**

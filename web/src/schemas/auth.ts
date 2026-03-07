@@ -10,6 +10,7 @@ export type LoginInput = z.infer<typeof loginInputSchema>;
 export const registerInputSchema = z
   .object({
     email: z.string().min(1, 'Email is required').email('Please enter a valid email address'),
+    email_confirmation: z.string().min(1, 'Please confirm your email address'),
     password: z.string().min(8, 'Password must be at least 8 characters'),
     password_confirmation: z.string().min(1, 'Please confirm your password'),
     terms_accepted: z.boolean().refine((v) => v === true, {
@@ -18,6 +19,10 @@ export const registerInputSchema = z
     privacy_accepted: z.boolean().refine((v) => v === true, {
       message: 'You must accept the Privacy Policy',
     }),
+  })
+  .refine((data) => data.email === data.email_confirmation, {
+    message: 'Emails do not match',
+    path: ['email_confirmation'],
   })
   .refine((data) => data.password === data.password_confirmation, {
     message: 'Passwords do not match',
@@ -36,6 +41,10 @@ export const userSchema = z.object({
   subscription_status: z.string().optional().default('none'),
   app_access: z.boolean().optional().default(false),
   trial_end: z.string().nullable().optional(),
+  address_line1: z.string().nullable().optional(),
+  address_city: z.string().nullable().optional(),
+  address_postcode: z.string().nullable().optional(),
+  address_country: z.string().nullable().optional(),
 });
 
 export const loginResponseSchema = z.object({

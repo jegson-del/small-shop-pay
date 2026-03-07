@@ -32,6 +32,14 @@ class StripeConnectController extends Controller
             return response()->json(['message' => 'Unauthenticated.'], 401);
         }
 
+        $hasAddress = !empty($user->address_line1) && !empty($user->address_city)
+            && !empty($user->address_postcode) && !empty($user->address_country);
+        if (!$hasAddress) {
+            return response()->json([
+                'message' => 'Complete your business address first (Step 1 in the dashboard).',
+            ], 403);
+        }
+
         try {
             if ($user->stripe_account_id === null) {
                 $this->createAccountUseCase->execute((string) $user->id);

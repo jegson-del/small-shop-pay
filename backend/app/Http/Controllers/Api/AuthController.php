@@ -103,6 +103,10 @@ class AuthController extends Controller
             'subscription_status' => $user->subscription_status ?? 'none',
             'app_access' => (bool) ($user->app_access ?? false),
             'trial_end' => $user->trial_end?->format('c'),
+            'address_line1' => $user->address_line1,
+            'address_city' => $user->address_city,
+            'address_postcode' => $user->address_postcode,
+            'address_country' => $user->address_country,
         ]);
     }
 }

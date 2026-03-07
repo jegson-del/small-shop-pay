@@ -86,6 +86,26 @@ final class EloquentUserRepository implements UserRepositoryInterface
         EloquentUser::where('id', $userId)->update(['subscription_status' => $status]);
     }
 
+    public function updateTerminalLocationId(string $userId, string $terminalLocationId): void
+    {
+        EloquentUser::where('id', $userId)->update(['terminal_location_id' => $terminalLocationId]);
+    }
+
+    public function updateAddress(
+        string $userId,
+        string $line1,
+        string $city,
+        string $postcode,
+        string $country
+    ): void {
+        EloquentUser::where('id', $userId)->update([
+            'address_line1' => $line1,
+            'address_city' => $city,
+            'address_postcode' => $postcode,
+            'address_country' => $country,
+        ]);
+    }
+
     private function toDomain(EloquentUser $model): User
     {
         return new User(
@@ -93,6 +113,7 @@ final class EloquentUserRepository implements UserRepositoryInterface
             email: $model->email,
             passwordHash: $model->password,
             stripeAccountId: $model->stripe_account_id,
+            terminalLocationId: $model->terminal_location_id,
             stripeCustomerId: $model->stripe_customer_id,
             subscriptionId: $model->subscription_id,
             subscriptionStatus: $model->subscription_status ?? 'none',
@@ -103,6 +124,10 @@ final class EloquentUserRepository implements UserRepositoryInterface
             emailVerifiedAt: $model->email_verified_at?->toDateTimeImmutable(),
             createdAt: $model->created_at?->toDateTimeImmutable(),
             updatedAt: $model->updated_at?->toDateTimeImmutable(),
+            addressLine1: $model->address_line1,
+            addressCity: $model->address_city,
+            addressPostcode: $model->address_postcode,
+            addressCountry: $model->address_country,
         );
     }
 

@@ -11,6 +11,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 
 class StripeReturnController extends Controller
 {
@@ -38,12 +39,40 @@ class StripeReturnController extends Controller
 
         try {
             $status = $this->stripeAdapter->getAccountStatus($accountId);
+
+            // Create Terminal location when possible. If it fails (e.g. sandbox restrictions),
+            // still return success — TerminalController will create it when user first uses Take Payment.
+            if ($user->terminalLocationId === null) {
+                try {
+                    $address = $user->hasAddressComplete()
+                        ? [
+                            'line1' => $user->addressLine1,
+                            'city' => $user->addressCity,
+                            'postcode' => $user->addressPostcode,
+                            'country' => $user->addressCountry ?? 'GB',
+                        ]
+                        : null;
+                    $location = $this->stripeAdapter->createTerminalLocation($accountId, $address);
+                    $this->userRepository->updateTerminalLocationId($user->id, $location['id']);
+                } catch (\Throwable $e) {
+                    Log::warning('Stripe return: Terminal location creation failed (will be created on first payment)', [
+                        'account_id' => $accountId,
+                        'message' => $e->getMessage(),
+                    ]);
+                }
+            }
+
             $params = [
                 'stripe' => 'return',
                 'charges_enabled' => $status['charges_enabled'] ? '1' : '0',
                 'payouts_enabled' => $status['payouts_enabled'] ? '1' : '0',
             ];
-        } catch (\Throwable) {
+        } catch (\Throwable $e) {
+            Log::error('Stripe return: status_check_failed', [
+                'account_id' => $accountId,
+                'message' => $e->getMessage(),
+                'exception' => get_class($e),
+            ]);
             $params = ['stripe' => 'return', 'error' => 'status_check_failed'];
         }
 

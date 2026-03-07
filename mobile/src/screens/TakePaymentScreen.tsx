@@ -18,7 +18,7 @@ import { useNavigation } from '@react-navigation/native';
 import * as Location from 'expo-location';
 import { useStripeTerminal } from '@stripe/stripe-terminal-react-native';
 import type { Reader } from '@stripe/stripe-terminal-react-native';
-import { createPaymentIntent } from '@/api/terminal';
+import { createPaymentIntent, getTerminalConfig } from '@/api/terminal';
 import { colors } from '@/theme/colors';
 import { GradientHeader } from '@/components/GradientHeader';
 
@@ -75,7 +75,6 @@ export function TakePaymentScreen() {
   const {
     initialize,
     discoverReaders,
-    cancelDiscovering,
     connectReader,
     connectedReader,
     retrievePaymentIntent,
@@ -122,57 +121,50 @@ export function TakePaymentScreen() {
   const ensureReaderConnected = async (): Promise<boolean> => {
     if (connectedReader) return true;
 
-    const { locationOk, bluetoothOk } = await ensureTerminalPermissions();
-    if (!locationOk) return false;
+    const { locationOk } = await ensureTerminalPermissions();
+    if (!locationOk) {
+      throw new Error('Location permission required for Tap to Pay. Enable location in Settings.');
+    }
 
     if (!isInitialized) {
       const initResult = await initialize();
       if (initResult.error) throw new Error(initResult.error.message ?? 'Failed to initialize Terminal');
     }
 
-    // Tap to Pay only (device NFC). Skip Bluetooth unless you add a physical reader.
-    const discoveryConfigs: Array<{ method: 'tapToPay' | 'bluetoothScan'; simulated: boolean }> = [
-      { method: 'tapToPay', simulated: false },
-      { method: 'tapToPay', simulated: true },
-    ];
+    const { location_id: backendLocationId } = await getTerminalConfig();
 
-    for (let i = 0; i < discoveryConfigs.length; i++) {
-      const { method, simulated } = discoveryConfigs[i];
-      if (i > 0) {
-        await cancelDiscovering();
-        await new Promise((r) => setTimeout(r, 500));
-      }
-      discoveredReadersRef.current = [];
-      if (__DEV__) {
-        console.log('[TakePayment] Discovering:', method, 'simulated:', simulated);
-      }
-      const { error } = await discoverReaders({
-        discoveryMethod: method,
-        simulated,
-      });
-      if (error) {
-        if (__DEV__) console.log('[TakePayment] Discovery error:', method, error.message);
-        continue;
-      }
-
-      const reader = await waitForDiscoveredReader(6000);
-      if (!reader) {
-        if (__DEV__) console.log('[TakePayment] No reader found after 6s for', method);
-        continue;
-      }
-
-      const locationId = reader.locationId ?? 'tml_FakeLocationIdForTesting';
-      const { reader: connected, error: connectError } = await connectReader(
-        { reader, locationId },
-        method
-      );
-      if (!connectError && connected) return true;
-      if (__DEV__ && connectError) {
-        console.log('[TakePayment] Connect error:', method, connectError.message);
-      }
+    if (!backendLocationId) {
+      throw new Error('Stripe Terminal location missing. Connect your Stripe account and try again.');
     }
 
-    return false;
+    // Tap to Pay only (device NFC). Use simulated: false for real NFC; never mix with simulated.
+    if (__DEV__) {
+      console.log('[TakePayment] Discovering tapToPay, simulated: false, location:', backendLocationId);
+    }
+    discoveredReadersRef.current = [];
+    const { error } = await discoverReaders({
+      discoveryMethod: 'tapToPay',
+      simulated: false,
+    });
+    if (error) {
+      throw new Error(error.message ?? 'Failed to discover Tap to Pay reader.');
+    }
+
+    const reader = await waitForDiscoveredReader(6000);
+    if (!reader) {
+      throw new Error(
+        'No Tap to Pay reader found. Turn on NFC, use a release build, and ensure Developer options are off.'
+      );
+    }
+
+    const { reader: connected, error: connectError } = await connectReader(
+      { reader, locationId: backendLocationId },
+      'tapToPay'
+    );
+    if (connectError || !connected) {
+      throw new Error(connectError?.message ?? 'Failed to connect Tap to Pay reader.');
+    }
+    return true;
   };
 
   const handleCharge = async () => {
@@ -188,15 +180,7 @@ export function TakePaymentScreen() {
     setProcessingPhase('connecting');
 
     try {
-      const connected = await ensureReaderConnected();
-      if (!connected) {
-        setProcessingPhase(null);
-        setResult('error');
-        setErrorMessage(
-          'Could not connect reader. Turn on NFC in Settings → Connected devices → NFC. Tap to Pay needs NFC enabled. For testing, try simulated mode.'
-        );
-        return;
-      }
+      await ensureReaderConnected();
 
       setProcessingPhase('present_card');
 

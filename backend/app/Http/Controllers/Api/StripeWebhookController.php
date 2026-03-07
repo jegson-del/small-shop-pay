@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Application\Contracts\StripeConnect\StripeConnectAdapterInterface;
 use App\Application\Contracts\User\UserRepositoryInterface;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -17,6 +18,7 @@ class StripeWebhookController extends Controller
 {
     public function __construct(
         private UserRepositoryInterface $userRepository,
+        private StripeConnectAdapterInterface $stripeAdapter,
         private StripeClient $stripe,
     ) {
     }
@@ -65,6 +67,9 @@ class StripeWebhookController extends Controller
                     break;
                 case 'payment_intent.payment_failed':
                     $this->handlePaymentIntentFailed($event->data->object);
+                    break;
+                case 'account.updated':
+                    $this->handleAccountUpdated($event->data->object);
                     break;
                 default:
                     // Log but do not fail for unhandled event types
@@ -232,5 +237,42 @@ class StripeWebhookController extends Controller
             'currency' => strtolower((string) ($paymentIntent->currency ?? 'gbp')),
             'status' => 'failed',
         ]);
+    }
+
+    /**
+     * When Connect account becomes ready (charges_enabled && payouts_enabled),
+     * create Terminal Location if missing.
+     */
+    private function handleAccountUpdated(object $account): void
+    {
+        $accountId = $account->id ?? null;
+        if (!$accountId) {
+            return;
+        }
+
+        $chargesEnabled = (bool) ($account->charges_enabled ?? false);
+        $payoutsEnabled = (bool) ($account->payouts_enabled ?? false);
+        if (!$chargesEnabled || !$payoutsEnabled) {
+            return;
+        }
+
+        $user = $this->userRepository->findByStripeAccountId((string) $accountId);
+        if (!$user || $user->terminalLocationId !== null) {
+            return;
+        }
+
+        try {
+            $location = $this->stripeAdapter->createTerminalLocation((string) $accountId);
+            $this->userRepository->updateTerminalLocationId($user->id, $location['id']);
+            Log::info('Terminal location created via account.updated', [
+                'account_id' => $accountId,
+                'location_id' => $location['id'],
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('account.updated: failed to create Terminal location', [
+                'account_id' => $accountId,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 }

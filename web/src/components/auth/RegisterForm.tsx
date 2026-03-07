@@ -10,6 +10,7 @@ type Props = {
 export function RegisterForm({ onSuccess }: Props) {
   const [values, setValues] = useState<RegisterInput>({
     email: '',
+    email_confirmation: '',
     password: '',
     password_confirmation: '',
     terms_accepted: false,
@@ -43,6 +44,7 @@ export function RegisterForm({ onSuccess }: Props) {
       const errors = result.error.flatten().fieldErrors;
       setFieldErrors({
         email: errors.email?.[0],
+        email_confirmation: errors.email_confirmation?.[0],
         password: errors.password?.[0],
         password_confirmation: errors.password_confirmation?.[0],
         terms_accepted: errors.terms_accepted?.[0],
@@ -86,6 +88,27 @@ export function RegisterForm({ onSuccess }: Props) {
         {fieldErrors.email && (
           <p id="register-email-error" className="mt-1 text-sm text-error" role="alert">
             {fieldErrors.email}
+          </p>
+        )}
+      </div>
+      <div>
+        <label htmlFor="register-email-confirmation" className="block text-sm font-medium text-slate-700 mb-1">
+          Confirm email
+        </label>
+        <input
+          id="register-email-confirmation"
+          type="email"
+          value={values.email_confirmation}
+          onChange={handleChange('email_confirmation')}
+          autoComplete="email"
+          aria-invalid={Boolean(fieldErrors.email_confirmation)}
+          aria-describedby={fieldErrors.email_confirmation ? 'register-email-confirmation-error' : undefined}
+          className={`${inputBase} ${fieldErrors.email_confirmation ? inputError : inputNormal}`}
+          placeholder="you@example.com"
+        />
+        {fieldErrors.email_confirmation && (
+          <p id="register-email-confirmation-error" className="mt-1 text-sm text-error" role="alert">
+            {fieldErrors.email_confirmation}
           </p>
         )}
       </div>

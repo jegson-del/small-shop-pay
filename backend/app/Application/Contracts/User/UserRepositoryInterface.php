@@ -32,4 +32,14 @@ interface UserRepositoryInterface
     public function updateSubscriptionAppAccess(string $userId, bool $appAccess): void;
 
     public function updateSubscriptionStatus(string $userId, string $status): void;
+
+    public function updateTerminalLocationId(string $userId, string $terminalLocationId): void;
+
+    public function updateAddress(
+        string $userId,
+        string $line1,
+        string $city,
+        string $postcode,
+        string $country
+    ): void;
 }
