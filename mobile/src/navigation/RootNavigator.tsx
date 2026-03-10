@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActivityIndicator, Text, View, Platform, StyleSheet, Pressable } from 'react-native';
+import { Platform, StyleSheet, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { NavigationContainer } from '@react-navigation/native';
@@ -131,21 +131,8 @@ const HomeWithBiometricGate = () => (
   </BiometricGate>
 );
 
-function LoadingScreen() {
-  return (
-    <View style={{ flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' }}>
-      <ActivityIndicator size="large" color={colors.primary} />
-      <Text style={{ fontSize: 18, fontWeight: '600', marginTop: 16, color: colors.primary }}>SmallShopPay</Text>
-    </View>
-  );
-}
-
 export function RootNavigator() {
-  const { isLoading, isAuthenticated } = useAuth();
-
-  if (isLoading) {
-    return <LoadingScreen />;
-  }
+  const { isAuthenticated } = useAuth();
 
   return (
     <NavigationContainer>

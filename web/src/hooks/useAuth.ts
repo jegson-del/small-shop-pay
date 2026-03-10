@@ -50,7 +50,7 @@ export function useRegisterMutation(
   options?: UseMutationOptions<
     RegisterResponse,
     Error,
-    { email: string; password: string; terms_accepted: boolean; privacy_accepted: boolean }
+    { email: string; email_confirmation: string; password: string; terms_accepted: boolean; privacy_accepted: boolean }
   >
 ) {
   return useMutation({

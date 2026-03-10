@@ -2,11 +2,9 @@ import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   ActivityIndicator,
   StyleSheet,
-  KeyboardAvoidingView,
   Platform,
   Alert,
   PermissionsAndroid,
@@ -21,6 +19,72 @@ import type { Reader } from '@stripe/stripe-terminal-react-native';
 import { createPaymentIntent, getTerminalConfig } from '@/api/terminal';
 import { colors } from '@/theme/colors';
 import { GradientHeader } from '@/components/GradientHeader';
+
+const NUMPAD_KEYS = [
+  ['1', '2', '3'],
+  ['4', '5', '6'],
+  ['7', '8', '9'],
+  ['C', '0', '⌫'],
+] as const;
+
+/** Formats pence string as pounds display, e.g. "1050" → "10.50" */
+function formatPenceAsPounds(penceStr: string): string {
+  const pence = parseInt(penceStr || '0', 10) || 0;
+  return (pence / 100).toFixed(2);
+}
+
+function Numpad({
+  value,
+  onChange,
+  editable,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  editable: boolean;
+}) {
+  const handleKey = (key: string) => {
+    if (!editable) return;
+    if (key === '⌫') {
+      onChange(value.slice(0, -1));
+      return;
+    }
+    if (key === 'C') {
+      onChange('');
+      return;
+    }
+    if (value.length >= 8) return;
+    onChange(value + key);
+  };
+
+  return (
+    <View style={styles.numpad}>
+      {NUMPAD_KEYS.map((row, i) => (
+        <View key={i} style={styles.numpadRow}>
+          {row.map((key) => (
+            <TouchableOpacity
+              key={key}
+              style={[
+                styles.numpadKey,
+                (key === '⌫' || key === 'C') && styles.numpadKeyBack,
+                !editable && styles.numpadKeyDisabled,
+              ]}
+              onPress={() => handleKey(key)}
+              disabled={!editable}
+              activeOpacity={0.7}
+            >
+              <Text style={[
+                styles.numpadKeyText,
+                (key === '⌫' || key === 'C') && styles.numpadKeyBackText,
+              ]}>
+                {key}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      ))}
+    </View>
+  );
+}
 
 async function ensureTerminalPermissions(): Promise<{ locationOk: boolean; bluetoothOk: boolean }> {
   let locationOk = true;
@@ -101,10 +165,9 @@ export function TakePaymentScreen() {
   };
 
   const parseAmount = (): number | null => {
-    const cleaned = amountText.replace(/[^0-9.]/g, '');
-    const value = parseFloat(cleaned);
-    if (Number.isNaN(value) || value <= 0) return null;
-    return Math.round(value * 100);
+    const pence = parseInt(amountText.replace(/\D/g, ''), 10);
+    if (!amountText || pence <= 0) return null;
+    return pence;
   };
 
   const waitForDiscoveredReader = async (maxMs: number = 6000): Promise<Reader.Type | null> => {
@@ -157,10 +220,11 @@ export function TakePaymentScreen() {
       );
     }
 
-    const { reader: connected, error: connectError } = await connectReader(
-      { reader, locationId: backendLocationId },
-      'tapToPay'
-    );
+    const { reader: connected, error: connectError } = await connectReader({
+      reader,
+      locationId: backendLocationId,
+      discoveryMethod: 'tapToPay',
+    });
     if (connectError || !connected) {
       throw new Error(connectError?.message ?? 'Failed to connect Tap to Pay reader.');
     }
@@ -170,7 +234,7 @@ export function TakePaymentScreen() {
   const handleCharge = async () => {
     const pence = parseAmount();
     if (pence === null) {
-      Alert.alert('Invalid amount', 'Enter a valid amount in pounds (e.g. 10.50).');
+      Alert.alert('Invalid amount', 'Enter the amount using the keypad.');
       return;
     }
 
@@ -289,27 +353,19 @@ export function TakePaymentScreen() {
         </Pressable>
       </Modal>
 
-    <KeyboardAvoidingView
-      style={styles.keyboardView}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
-    >
-      <View style={styles.content}>
+    <View style={styles.content}>
+      <View style={styles.amountSection}>
         <Text style={styles.label}>Amount (GBP)</Text>
-
-        <View style={styles.inputRow}>
+        <View style={styles.amountDisplay} accessibilityLabel="Amount in pounds">
           <Text style={styles.currencySymbol}>£</Text>
-          <TextInput
-            style={styles.input}
-            value={amountText}
-            onChangeText={setAmountText}
-            placeholder="0.00"
-            placeholderTextColor={colors.textSecondary}
-            keyboardType="decimal-pad"
-            editable={result === 'idle' || result === 'error'}
-            accessibilityLabel="Amount in pounds"
-          />
+          <Text style={styles.amountText}>{formatPenceAsPounds(amountText)}</Text>
         </View>
+        <Numpad
+          value={amountText}
+          onChange={setAmountText}
+          editable={result === 'idle' || result === 'error'}
+        />
+      </View>
 
         {errorMessage && result !== 'ready' && (
           <View style={styles.errorBox}>
@@ -364,7 +420,6 @@ export function TakePaymentScreen() {
           </TouchableOpacity>
         )}
       </View>
-    </KeyboardAvoidingView>
     </View>
   );
 }
@@ -378,9 +433,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
-  },
-  keyboardView: {
-    flex: 1,
   },
   modalOverlay: {
     flex: 1,
@@ -444,6 +496,58 @@ const styles = StyleSheet.create({
     padding: 24,
     paddingTop: 16,
   },
+  amountSection: {
+    marginBottom: 24,
+  },
+  amountDisplay: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 20,
+    marginBottom: 20,
+  },
+  amountText: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: colors.textPrimary,
+  },
+  numpad: {
+    marginBottom: 24,
+  },
+  numpadRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  numpadKey: {
+    width: '31%',
+    aspectRatio: 1.8,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  numpadKeyBack: {
+    backgroundColor: colors.surface,
+  },
+  numpadKeyText: {
+    fontSize: 22,
+    fontWeight: '600',
+    color: colors.textPrimary,
+  },
+  numpadKeyBackText: {
+    fontSize: 18,
+    color: colors.textSecondary,
+  },
+  numpadKeyDisabled: {
+    opacity: 0.5,
+  },
   title: {
     fontSize: 22,
     fontWeight: '700',
@@ -455,27 +559,11 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     marginBottom: 16,
   },
-  inputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    marginBottom: 16,
-  },
   currencySymbol: {
-    fontSize: 20,
-    fontWeight: '600',
+    fontSize: 28,
+    fontWeight: '700',
     color: colors.textPrimary,
     marginRight: 8,
-  },
-  input: {
-    flex: 1,
-    fontSize: 20,
-    paddingVertical: 16,
-    color: colors.textPrimary,
   },
   errorBox: {
     backgroundColor: '#fef2f2',

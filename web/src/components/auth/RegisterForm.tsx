@@ -55,6 +55,7 @@ export function RegisterForm({ onSuccess }: Props) {
     setFieldErrors({});
     register.mutate({
       email: result.data.email,
+      email_confirmation: result.data.email_confirmation,
       password: result.data.password,
       terms_accepted: result.data.terms_accepted,
       privacy_accepted: result.data.privacy_accepted,

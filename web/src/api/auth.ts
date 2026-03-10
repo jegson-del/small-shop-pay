@@ -12,12 +12,17 @@ import {
 async function parseJsonOrThrow(res: Response, fallbackMessage: string): Promise<unknown> {
   const text = await res.text();
   if (!text) {
-    throw new Error(`${fallbackMessage} (API returned empty response – check backend is running and proxy points to correct port)`);
+    throw new Error(`${fallbackMessage} (API returned empty response – check backend is running on port 8000 and Vite proxy target)`);
   }
   try {
     return JSON.parse(text);
   } catch {
-    throw new Error(`${fallbackMessage} (API returned invalid JSON – status ${res.status})`);
+    const snippet = text.length > 120 ? text.slice(0, 120) + '…' : text;
+    const looksLikeHtml = /^\s*</.test(text.trim());
+    const hint = looksLikeHtml
+      ? ' – Response looks like HTML. Ensure Laravel backend is running (php artisan serve) and Vite proxy target is http://localhost:8000'
+      : ` – Response: "${snippet.replace(/"/g, "'")}"`;
+    throw new Error(`${fallbackMessage} (API returned invalid JSON – status ${res.status}${hint})`);
   }
 }
 
@@ -40,13 +45,18 @@ export async function login(email: string, password: string): Promise<LoginRespo
 /** Register – does not return tokens; user must login after */
 export async function register(params: {
   email: string;
+  email_confirmation: string;
   password: string;
   terms_accepted: boolean;
   privacy_accepted: boolean;
 }): Promise<RegisterResponse> {
   const res = await fetch('/api/auth/register', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+    },
     body: JSON.stringify(params),
   });
 
