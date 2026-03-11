@@ -45,7 +45,7 @@ export function useLoginMutation(
   });
 }
 
-/** Register mutation */
+/** Register mutation (legacy – use Send OTP flow instead) */
 export function useRegisterMutation(
   options?: UseMutationOptions<
     RegisterResponse,
@@ -55,6 +55,27 @@ export function useRegisterMutation(
 ) {
   return useMutation({
     mutationFn: authApi.register,
+    ...options,
+  });
+}
+
+/** Send registration OTP – step 1; on success navigate to verify-otp page */
+export function useSendRegistrationOtpMutation(
+  options?: UseMutationOptions<
+    void,
+    Error,
+    {
+      email: string;
+      email_confirmation: string;
+      password: string;
+      password_confirmation: string;
+      terms_accepted: boolean;
+      privacy_accepted: boolean;
+    }
+  >
+) {
+  return useMutation({
+    mutationFn: authApi.sendRegistrationOtp,
     ...options,
   });
 }

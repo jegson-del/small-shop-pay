@@ -72,6 +72,8 @@ export function DashboardPage() {
   const hasStripeAccount = Boolean(user?.stripe_account_id);
   const { data: connectStatus, isLoading: connectLoading } = useConnectStatus(hasStripeAccount);
   const connectComplete = connectStatus?.charges_enabled && connectStatus?.payouts_enabled;
+  const detailsSubmitted = Boolean(connectStatus?.details_submitted);
+  const needsIdentityVerification = hasStripeAccount && detailsSubmitted && !connectComplete;
   const subscriptionActive = user?.subscription_status === 'active' || user?.subscription_status === 'trialing';
   const addressComplete = hasAddressComplete(user);
   const canConnectStripe = addressComplete;
@@ -131,10 +133,10 @@ export function DashboardPage() {
       {/* Onboarding incomplete: verification required (e.g. identity upload) */}
       {showVerificationBanner && (
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 shadow-sm" role="alert">
-          <h2 className="font-semibold text-amber-900">Onboarding not complete</h2>
+          <h2 className="font-semibold text-amber-900">Identity verification required</h2>
           <p className="mt-1 text-sm text-amber-800">
-            We need to verify your identity to finish connecting your Stripe account. Please click{' '}
-            <strong>Complete onboarding</strong> below to continue to Stripe’s verification (e.g. upload your ID).
+            You&apos;ve completed the first part (business details). Stripe now needs to verify your identity (e.g. upload a photo ID). Click{' '}
+            <strong>Verify identity</strong> in Step 2 below to continue to Stripe’s verification (e.g. upload your ID).
             You may need to log in first if you were redirected here from Stripe.
           </p>
         </div>
@@ -230,7 +232,7 @@ export function DashboardPage() {
         </div>
       </section>
 
-      {/* Step 2: Connect with Stripe */}
+      {/* Step 2: Connect with Stripe (business details + identity verification) */}
       <section className={`rounded-xl border p-6 shadow-sm transition-shadow duration-300 ${
         canConnectStripe ? 'border-slate-200 bg-white hover:shadow-md' : 'border-slate-100 bg-slate-50'
       }`}>
@@ -245,44 +247,76 @@ export function DashboardPage() {
           <div className="flex-1">
             <h2 className="font-semibold text-slate-900">Connect with Stripe</h2>
             <p className="mt-1 text-sm text-slate-600">
-              Connect your Stripe account to receive payouts from your customers.
+              Stripe Connect has two parts: business details, then identity verification.
             </p>
+
+            {needsIdentityVerification && (
+              <div className="mt-3 space-y-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+                <p className="flex items-center gap-2 text-sm text-slate-700">
+                  <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-success/20 text-success text-xs font-semibold">✓</span>
+                  Business details – complete
+                </p>
+                <p className="flex items-center gap-2 text-sm text-slate-700">
+                  <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-amber-100 text-amber-800 text-xs font-semibold">2</span>
+                  Identity verification – upload a photo ID to finish
+                </p>
+              </div>
+            )}
+
             {!canConnectStripe ? (
               <p className="mt-3 text-sm text-slate-500">Complete Step 1 (address) first.</p>
             ) : !hasStripeAccount ? (
-              <button
-                onClick={handleConnect}
-                disabled={connectMutation.isPending}
-                className="mt-3 inline-flex items-center gap-2 rounded-lg bg-[#635bff] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#5149e6] disabled:opacity-70 disabled:cursor-not-allowed transition-colors"
-              >
-                {connectMutation.isPending ? (
-                  <>
-                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" aria-hidden />
-                    Connecting…
-                  </>
-                ) : (
-                  'Connect with Stripe'
-                )}
-              </button>
+              <div className="mt-3">
+                <p className="mb-2 text-sm text-slate-600">
+                  First, you&apos;ll enter your business and bank details. Then Stripe will ask you to verify your identity (e.g. photo ID).
+                </p>
+                <button
+                  onClick={handleConnect}
+                  disabled={connectMutation.isPending}
+                  className="inline-flex items-center gap-2 rounded-lg bg-[#635bff] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#5149e6] disabled:opacity-70 disabled:cursor-not-allowed transition-colors"
+                >
+                  {connectMutation.isPending ? (
+                    <>
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" aria-hidden />
+                      Connecting…
+                    </>
+                  ) : (
+                    'Connect with Stripe'
+                  )}
+                </button>
+              </div>
             ) : connectLoading ? (
               <p className="mt-3 text-sm text-slate-500">Checking status…</p>
             ) : connectComplete ? (
               <p className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-success/10 px-3 py-1.5 text-sm font-medium text-success">✓ Connected</p>
             ) : (
-              <button
-                onClick={handleConnect}
-                disabled={connectMutation.isPending}
-                className="mt-3 inline-flex items-center gap-2 rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-70 disabled:cursor-not-allowed transition-colors"
-              >
-                {connectMutation.isPending ? (
-                  <>
-                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-500 border-t-transparent" aria-hidden />
-                    Redirecting…
-                  </>
-                ) : (
-                  'Complete onboarding'
-                )}
-              </button>
+              <div className="mt-3">
+                <p className="mb-2 text-sm text-slate-600">
+                  {needsIdentityVerification
+                    ? 'Stripe needs to verify your identity (e.g. upload a photo ID) before you can accept payments.'
+                    : 'Continue with Stripe to complete your account setup.'}
+                </p>
+                <button
+                  onClick={handleConnect}
+                  disabled={connectMutation.isPending}
+                  className={`inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium disabled:opacity-70 disabled:cursor-not-allowed transition-colors ${
+                    needsIdentityVerification
+                      ? 'bg-amber-600 text-white hover:bg-amber-700'
+                      : 'border border-slate-300 text-slate-700 hover:bg-slate-50'
+                  }`}
+                >
+                  {connectMutation.isPending ? (
+                    <>
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden />
+                      Redirecting…
+                    </>
+                  ) : needsIdentityVerification ? (
+                    'Verify identity'
+                  ) : (
+                    'Continue with Stripe'
+                  )}
+                </button>
+              </div>
             )}
           </div>
         </div>

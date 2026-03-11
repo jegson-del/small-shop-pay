@@ -35,7 +35,7 @@ export function LoginPage() {
         <h1 className="text-2xl font-bold text-slate-900 mb-2">Log in</h1>
         <p className="text-slate-600 mb-6">
           {isReturnFromStripe
-            ? 'Log in to complete your Stripe onboarding and continue to identity verification.'
+            ? 'Log in to continue to identity verification (upload your ID in Stripe).'
             : 'Enter your email and password to access your dashboard.'}
         </p>
         {message && (

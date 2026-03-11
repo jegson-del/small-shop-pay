@@ -78,6 +78,7 @@ final class StripeConnectAdapter implements StripeConnectAdapterInterface
         return [
             'charges_enabled' => (bool) $account->charges_enabled,
             'payouts_enabled' => (bool) $account->payouts_enabled,
+            'details_submitted' => (bool) ($account->details_submitted ?? false),
         ];
     }
 }

@@ -42,4 +42,6 @@ interface UserRepositoryInterface
         string $postcode,
         string $country
     ): void;
+
+    public function updatePassword(string $userId, string $passwordHash): void;
 }

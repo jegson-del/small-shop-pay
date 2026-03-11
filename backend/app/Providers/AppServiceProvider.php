@@ -16,6 +16,7 @@ use App\Infrastructure\Auth\SanctumAccessTokenService;
 use App\Infrastructure\Persistence\EloquentRefreshTokenRepository;
 use App\Infrastructure\Persistence\EloquentUserRepository;
 use App\Infrastructure\Stripe\StripeConnectAdapter;
+use App\Services\OtpService;
 use Illuminate\Support\ServiceProvider;
 use Stripe\StripeClient;
 
@@ -30,6 +31,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(PasswordHasherInterface::class, BcryptPasswordHasher::class);
         $this->app->bind(RefreshTokenRepositoryInterface::class, EloquentRefreshTokenRepository::class);
         $this->app->bind(AccessTokenServiceInterface::class, SanctumAccessTokenService::class);
+        $this->app->singleton(OtpService::class, OtpService::class);
 
         $this->app->singleton(StripeClient::class, function () {
             $key = config('stripe.secret_key') ?? 'sk_test_placeholder';

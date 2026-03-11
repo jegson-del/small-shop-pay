@@ -107,3 +107,101 @@ export async function getMe(): Promise<User> {
   const data = await api.get<unknown>('/auth/me');
   return userSchema.parse(data);
 }
+
+/** Forgot password – send OTP to email */
+export async function forgotPassword(email: string): Promise<void> {
+  const res = await fetch('/api/auth/forgot-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+  const data = (await parseJsonOrThrow(res, 'Failed to send OTP')) as Record<string, unknown>;
+  if (!res.ok) {
+    throw new Error((data?.message as string) ?? 'Failed to send OTP');
+  }
+}
+
+/** Verify forgot-password OTP – returns reset_token */
+export async function verifyForgotPasswordOtp(
+  email: string,
+  otp: string
+): Promise<{ reset_token: string }> {
+  const res = await fetch('/api/auth/forgot-password/verify-otp', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({ email, otp }),
+  });
+  const data = (await parseJsonOrThrow(res, 'Invalid OTP')) as Record<string, unknown>;
+  if (!res.ok) {
+    throw new Error((data?.message as string) ?? 'Invalid or expired OTP');
+  }
+  const token = data.reset_token as string;
+  if (!token) throw new Error('Invalid response');
+  return { reset_token: token };
+}
+
+/** Reset password with reset_token from verifyForgotPasswordOtp */
+export async function resetPassword(
+  resetToken: string,
+  password: string,
+  passwordConfirmation: string
+): Promise<void> {
+  const res = await fetch('/api/auth/reset-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({
+      reset_token: resetToken,
+      password,
+      password_confirmation: passwordConfirmation,
+    }),
+  });
+  const data = (await parseJsonOrThrow(res, 'Failed to reset password')) as Record<string, unknown>;
+  if (!res.ok) {
+    throw new Error((data?.message as string) ?? 'Failed to reset password');
+  }
+}
+
+/** Send registration OTP – step 1 of registration */
+export async function sendRegistrationOtp(params: {
+  email: string;
+  email_confirmation: string;
+  password: string;
+  password_confirmation: string;
+  terms_accepted: boolean;
+  privacy_accepted: boolean;
+}): Promise<void> {
+  const res = await fetch('/api/auth/register/send-otp', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+    },
+    body: JSON.stringify(params),
+  });
+  const data = (await parseJsonOrThrow(res, 'Registration failed')) as Record<string, unknown>;
+  if (!res.ok) {
+    throw new Error((data?.message as string) ?? 'Registration failed');
+  }
+}
+
+/** Verify registration OTP – step 2, completes registration */
+export async function verifyRegistrationOtp(
+  email: string,
+  otp: string
+): Promise<RegisterResponse> {
+  const res = await fetch('/api/auth/register/verify-otp', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+    },
+    body: JSON.stringify({ email, otp }),
+  });
+  const data = (await parseJsonOrThrow(res, 'Verification failed')) as Record<string, unknown>;
+  if (!res.ok) {
+    throw new Error((data?.message as string) ?? 'Invalid or expired OTP');
+  }
+  return registerResponseSchema.parse(data);
+}

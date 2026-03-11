@@ -4,6 +4,7 @@ export type ConnectStatus = {
   stripe_account_id: string | null;
   charges_enabled: boolean;
   payouts_enabled: boolean;
+  details_submitted: boolean;
 };
 
 export type SubscriptionCheckoutResponse = {

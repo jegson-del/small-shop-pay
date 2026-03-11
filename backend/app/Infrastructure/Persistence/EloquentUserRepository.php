@@ -106,6 +106,11 @@ final class EloquentUserRepository implements UserRepositoryInterface
         ]);
     }
 
+    public function updatePassword(string $userId, string $passwordHash): void
+    {
+        EloquentUser::where('id', $userId)->update(['password' => $passwordHash]);
+    }
+
     private function toDomain(EloquentUser $model): User
     {
         return new User(

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\MerchantStatusController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\PaymentController;
@@ -13,9 +14,16 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('webhooks/stripe', [StripeWebhookController::class, 'handle']);
 
+Route::post('contact', [ContactController::class, 'contactus']);
+
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
+    Route::post('register/send-otp', [AuthController::class, 'sendRegistrationOtp']);
+    Route::post('register/verify-otp', [AuthController::class, 'verifyRegistrationOtp']);
     Route::post('login', [AuthController::class, 'login']);
+    Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::post('forgot-password/verify-otp', [AuthController::class, 'verifyForgotPasswordOtp']);
+    Route::post('reset-password', [AuthController::class, 'resetPassword']);
     Route::post('refresh', [AuthController::class, 'refresh']);
     Route::post('logout', [AuthController::class, 'logout']);
     Route::get('me', [AuthController::class, 'me'])->middleware('auth:sanctum');

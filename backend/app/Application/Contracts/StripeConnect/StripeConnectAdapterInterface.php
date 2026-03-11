@@ -21,9 +21,9 @@ interface StripeConnectAdapterInterface
     public function createAccountLink(string $accountId, string $returnUrl, string $refreshUrl): array;
 
     /**
-     * Retrieve account and return charges_enabled, payouts_enabled.
+     * Retrieve account status.
      *
-     * @return array{charges_enabled: bool, payouts_enabled: bool}
+     * @return array{charges_enabled: bool, payouts_enabled: bool, details_submitted: bool}
      */
     public function getAccountStatus(string $accountId): array;
 

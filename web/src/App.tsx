@@ -10,6 +10,9 @@ import { PrivacyPage } from '@/pages/PrivacyPage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { SettingsPage } from '@/pages/SettingsPage';
 import { SubscriptionSuccessPage } from '@/pages/SubscriptionSuccessPage';
+import { ContactPage } from '@/pages/ContactPage';
+import { ForgotPasswordPage } from '@/pages/ForgotPasswordPage';
+import { VerifyRegistrationOtpPage } from '@/pages/VerifyRegistrationOtpPage';
 
 function App() {
   return (
@@ -18,23 +21,24 @@ function App() {
         <Route element={<PublicLayout />}>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/register/verify-otp" element={<VerifyRegistrationOtpPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/contact" element={<ContactPage />} />
         </Route>
 
         <Route
-          path="/"
           element={
             <ProtectedRoute>
               <AuthLayout />
             </ProtectedRoute>
           }
         >
-          <Route index element={<Navigate to="/dashboard" replace />} />
-          <Route path="dashboard" element={<DashboardPage />} />
-          <Route path="settings" element={<SettingsPage />} />
-          <Route path="subscription-success" element={<SubscriptionSuccessPage />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/subscription-success" element={<SubscriptionSuccessPage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

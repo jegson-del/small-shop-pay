@@ -7,8 +7,11 @@ export function LandingFooter() {
         <Link to="/terms" className="text-slate-500 hover:text-slate-900 transition-colors py-2 min-h-[44px] flex items-center">
           Terms & Conditions
         </Link>
-        <Link to="/privacy" className="text-slate-500 hover:text-slate-900 transition-colors">
+        <Link to="/privacy" className="text-slate-500 hover:text-slate-900 transition-colors py-2 min-h-[44px] flex items-center">
           Privacy Policy
+        </Link>
+        <Link to="/contact" className="text-slate-500 hover:text-slate-900 transition-colors py-2 min-h-[44px] flex items-center">
+          Contact us
         </Link>
         <a href="mailto:support@smallshoppay.com" className="text-slate-500 hover:text-slate-900 transition-colors py-2 min-h-[44px] flex items-center">
           Support

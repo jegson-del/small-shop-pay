@@ -100,6 +100,14 @@ export function LoginForm({ onSuccess }: Props) {
           {login.error?.message ?? 'Login failed'}
         </div>
       )}
+      <div className="flex justify-end">
+        <Link
+          to="/forgot-password"
+          className="text-sm font-medium text-primary hover:underline"
+        >
+          Forgot password?
+        </Link>
+      </div>
       <button
         type="submit"
         disabled={login.isPending}

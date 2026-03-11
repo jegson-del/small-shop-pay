@@ -17,7 +17,7 @@ final class GetStripeConnectStatusUseCase
     }
 
     /**
-     * @return array{stripe_account_id: string|null, charges_enabled: bool, payouts_enabled: bool}
+     * @return array{stripe_account_id: string|null, charges_enabled: bool, payouts_enabled: bool, details_submitted: bool}
      */
     public function execute(string $userId): array
     {
@@ -31,6 +31,7 @@ final class GetStripeConnectStatusUseCase
                 'stripe_account_id' => null,
                 'charges_enabled' => false,
                 'payouts_enabled' => false,
+                'details_submitted' => false,
             ];
         }
 
@@ -40,6 +41,7 @@ final class GetStripeConnectStatusUseCase
             'stripe_account_id' => $user->stripeAccountId,
             'charges_enabled' => $status['charges_enabled'],
             'payouts_enabled' => $status['payouts_enabled'],
+            'details_submitted' => $status['details_submitted'],
         ];
     }
 }

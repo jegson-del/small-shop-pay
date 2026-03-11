@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { useRegisterMutation } from '@/hooks/useAuth';
+import { Link, useNavigate } from 'react-router-dom';
+import { useSendRegistrationOtpMutation } from '@/hooks/useAuth';
 import { registerInputSchema, type RegisterInput } from '@/schemas/auth';
 
 type Props = {
@@ -8,6 +8,7 @@ type Props = {
 };
 
 export function RegisterForm({ onSuccess }: Props) {
+  const navigate = useNavigate();
   const [values, setValues] = useState<RegisterInput>({
     email: '',
     email_confirmation: '',
@@ -18,9 +19,11 @@ export function RegisterForm({ onSuccess }: Props) {
   });
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof RegisterInput, string>>>({});
 
-  const register = useRegisterMutation({
-    onSuccess: () => {
-      onSuccess?.();
+  const sendOtp = useSendRegistrationOtpMutation({
+    onSuccess: (_, variables) => {
+      navigate(`/register/verify-otp?email=${encodeURIComponent(variables.email)}`, {
+        replace: true,
+      });
     },
     onError: () => {
       setFieldErrors({});
@@ -53,10 +56,11 @@ export function RegisterForm({ onSuccess }: Props) {
       return;
     }
     setFieldErrors({});
-    register.mutate({
+    sendOtp.mutate({
       email: result.data.email,
       email_confirmation: result.data.email_confirmation,
       password: result.data.password,
+      password_confirmation: result.data.password_confirmation,
       terms_accepted: result.data.terms_accepted,
       privacy_accepted: result.data.privacy_accepted,
     });
@@ -218,20 +222,20 @@ export function RegisterForm({ onSuccess }: Props) {
         )}
       </div>
 
-      {register.isError && (
+      {sendOtp.isError && (
         <div
           className="rounded-xl px-4 py-3 text-sm text-error bg-red-50 border border-red-100"
           role="alert"
         >
-          {register.error?.message ?? 'Registration failed'}
+          {sendOtp.error?.message ?? 'Registration failed'}
         </div>
       )}
       <button
         type="submit"
-        disabled={register.isPending}
+        disabled={sendOtp.isPending}
         className="w-full bg-primary hover:bg-[#0949b8] text-white px-6 py-3 rounded-xl font-semibold shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:shadow-lg transition-all duration-200 min-h-[48px]"
       >
-        {register.isPending ? 'Creating account...' : 'Create account'}
+        {sendOtp.isPending ? 'Sending code...' : 'Create account'}
       </button>
       <p className="text-center text-slate-600 text-sm">
         Already have an account?{' '}
