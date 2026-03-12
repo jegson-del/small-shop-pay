@@ -18,6 +18,7 @@ import { useStripeTerminal } from '@stripe/stripe-terminal-react-native';
 import type { Reader } from '@stripe/stripe-terminal-react-native';
 import { createPaymentIntent, getTerminalConfig } from '@/api/terminal';
 import { colors } from '@/theme/colors';
+import { Ionicons } from '@expo/vector-icons';
 import { GradientHeader } from '@/components/GradientHeader';
 
 const NUMPAD_KEYS = [
@@ -303,9 +304,13 @@ export function TakePaymentScreen() {
       <GradientHeader
         title="Take Payment"
         subtitle={pence ? `£${(pence / 100).toFixed(2)}` : 'Enter amount to charge'}
-        rightElement={
-          <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-            <Text style={styles.backText}>← Back</Text>
+        leftElement={
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            style={styles.headerBackButton}
+          >
+            <Ionicons name="chevron-back" size={28} color="#fff" />
           </TouchableOpacity>
         }
       />
@@ -429,10 +434,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.surface,
   },
-  backText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+  headerBackButton: {
+    marginRight: 8,
   },
   modalOverlay: {
     flex: 1,

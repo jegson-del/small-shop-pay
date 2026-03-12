@@ -23,6 +23,7 @@
     "expo-location": "~55.1.2",
     "expo-secure-store": "~55.0.8",
     "expo-splash-screen": "~55.0.10",
+    "@expo/vector-icons": "^15.0.2",
     "expo-status-bar": "~55.0.4",
     "jest": "~29.7.0",
     "jest-expo": "~55.0.9",

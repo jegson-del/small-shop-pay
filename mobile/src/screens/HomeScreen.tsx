@@ -133,7 +133,7 @@ export function HomeScreen() {
           <View style={styles.cardHeader}>
             <Text style={styles.cardTitle}>Recent payments</Text>
             {payments.length > 0 && (
-              <TouchableOpacity onPress={() => navigation.navigate('Payments' as never)}>
+              <TouchableOpacity onPress={() => navigation.getParent()?.navigate('Payments' as never)}>
                 <Text style={styles.seeAll}>See all</Text>
               </TouchableOpacity>
             )}

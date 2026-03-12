@@ -27,7 +27,7 @@ export function PaymentsScreen() {
   const { user } = useAuth();
 
   const handleBack = () => {
-    navigation.navigate('Home' as never);
+    navigation.goBack();
   };
   const [payments, setPayments] = useState<PaymentItem[]>([]);
   const [loading, setLoading] = useState(true);

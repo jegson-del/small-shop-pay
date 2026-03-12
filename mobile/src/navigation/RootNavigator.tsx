@@ -1,5 +1,6 @@
 import React from 'react';
 import { Platform, StyleSheet, Pressable } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { NavigationContainer } from '@react-navigation/native';
@@ -18,6 +19,7 @@ export type RootStackParamList = {
   Login: undefined;
   MainTabs: undefined;
   TakePayment: undefined;
+  Payments: undefined;
   More: undefined;
 };
 
@@ -68,6 +70,23 @@ function TabIcon({ name, focused }: { name: string; focused: boolean }) {
     return <Ionicons name={focused ? 'home' : 'home-outline'} size={size} color={color} />;
   }
   return <Ionicons name={focused ? 'receipt' : 'receipt-outline'} size={size} color={color} />;
+}
+
+/** Custom tab button for Payments – pushes Payments stack screen for proper slide-back transition */
+function PaymentsTabButton(props: any) {
+  const navigation = useNavigation();
+  const handlePress = () => {
+    navigation.getParent()?.navigate('Payments' as never);
+  };
+  return (
+    <TabBarButton
+      {...props}
+      onPress={handlePress}
+      onLongPress={handlePress}
+      accessibilityRole="button"
+      accessibilityState={{ selected: false }}
+    />
+  );
 }
 
 function MainTabs() {
@@ -121,6 +140,7 @@ function MainTabs() {
         options={{
           tabBarAccessibilityLabel: 'Payments',
           tabBarIcon: ({ focused }) => <TabIcon name="Payments" focused={focused} />,
+          tabBarButton: (props) => <PaymentsTabButton {...props} />,
         }}
       />
     </Tab.Navigator>
@@ -157,6 +177,11 @@ export function RootNavigator() {
             <Stack.Screen
               name="TakePayment"
               component={TakePaymentScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Payments"
+              component={PaymentsScreen}
               options={{ headerShown: false }}
             />
             <Stack.Screen name="More" component={MoreScreen} options={{ headerShown: false }} />
