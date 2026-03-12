@@ -15,6 +15,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getPayments, type PaymentItem } from '@/api/payments';
 import { colors } from '@/theme/colors';
 import { typography } from '@/theme/typography';
+import { Ionicons } from '@expo/vector-icons';
 import { GradientHeader } from '@/components/GradientHeader';
 
 /** Subscription allows payments when active or trialing (per plan sub-6). */
@@ -37,7 +38,7 @@ function displayName(email: string | undefined): string {
 
 export function HomeScreen() {
   const navigation = useNavigation();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const allowed = canTakePayment(user?.subscription_status, user?.app_access);
   const [payments, setPayments] = useState<PaymentItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -75,8 +76,8 @@ export function HomeScreen() {
     navigation.getParent()?.navigate('TakePayment' as never);
   };
 
-  const handleLogout = () => {
-    logout();
+  const handleAccountSettings = () => {
+    navigation.getParent()?.navigate('More' as never);
   };
 
   return (
@@ -85,8 +86,13 @@ export function HomeScreen() {
         title={`Hi, ${name}`}
         subtitle={allowed ? "You're ready to accept payments" : 'Activate your account to start'}
         rightElement={
-          <TouchableOpacity onPress={handleLogout} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-            <Text style={styles.logoutText}>Log out</Text>
+          <TouchableOpacity
+            onPress={handleAccountSettings}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            style={styles.accountButton}
+          >
+            <Ionicons name="settings-outline" size={24} color="#fff" />
+            <Text style={styles.accountButtonText}>Settings</Text>
           </TouchableOpacity>
         }
       />
@@ -172,9 +178,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.surface,
   },
-  logoutText: {
+  accountButton: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 2,
+  },
+  accountButtonText: {
     color: '#fff',
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
   },
   scroll: {

@@ -12,11 +12,13 @@ import { LoginScreen } from '@/screens/LoginScreen';
 import { HomeScreen } from '@/screens/HomeScreen';
 import { PaymentsScreen } from '@/screens/PaymentsScreen';
 import { TakePaymentScreen } from '@/screens/TakePaymentScreen';
+import { MoreScreen } from '@/screens/MoreScreen';
 
 export type RootStackParamList = {
   Login: undefined;
   MainTabs: undefined;
   TakePayment: undefined;
+  More: undefined;
 };
 
 export type MainTabParamList = {
@@ -157,6 +159,7 @@ export function RootNavigator() {
               component={TakePaymentScreen}
               options={{ headerShown: false }}
             />
+            <Stack.Screen name="More" component={MoreScreen} options={{ headerShown: false }} />
           </>
         )}
       </Stack.Navigator>

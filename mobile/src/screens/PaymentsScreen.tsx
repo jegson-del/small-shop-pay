@@ -2,12 +2,15 @@ import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
+  TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
   ScrollView,
   StyleSheet,
   Platform,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/contexts/AuthContext';
 import { GradientHeader } from '@/components/GradientHeader';
 import { getPayments, type PaymentItem } from '@/api/payments';
@@ -20,7 +23,12 @@ function formatAmount(amount: number, currency: string): string {
 }
 
 export function PaymentsScreen() {
+  const navigation = useNavigation();
   const { user } = useAuth();
+
+  const handleBack = () => {
+    navigation.navigate('Home' as never);
+  };
   const [payments, setPayments] = useState<PaymentItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -59,7 +67,19 @@ export function PaymentsScreen() {
 
   return (
     <View style={styles.page}>
-      <GradientHeader title="Payments" subtitle="Your payment history" />
+      <GradientHeader
+        title="Payments"
+        subtitle="Your payment history"
+        leftElement={
+          <TouchableOpacity
+            onPress={handleBack}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            style={styles.backButton}
+          >
+            <Ionicons name="chevron-back" size={28} color="#fff" />
+          </TouchableOpacity>
+        }
+      />
     <ScrollView
       style={styles.scroll}
       contentContainerStyle={styles.scrollContent}
@@ -107,6 +127,9 @@ export function PaymentsScreen() {
 }
 
 const styles = StyleSheet.create({
+  backButton: {
+    marginRight: 8,
+  },
   page: {
     flex: 1,
     backgroundColor: colors.surface,

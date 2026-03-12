@@ -9,10 +9,11 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/contexts/AuthContext';
-import { API_BASE_URL } from '@/config/api';
+import { API_BASE_URL, WEB_BASE_URL } from '@/config/api';
 import { colors } from '@/theme/colors';
 import { typography } from '@/theme/typography';
 
@@ -131,6 +132,14 @@ export function LoginScreen() {
             ) : null}
 
             <TouchableOpacity
+              onPress={() => Linking.openURL(`${WEB_BASE_URL}/forgot-password`)}
+              activeOpacity={0.7}
+              style={styles.forgotLink}
+            >
+              <Text style={styles.forgotLinkText}>Forgot password?</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
               onPress={handleLogin}
               disabled={loading}
               activeOpacity={0.85}
@@ -234,6 +243,15 @@ const styles = StyleSheet.create({
     color: colors.error,
     marginTop: 6,
     marginBottom: 2,
+  },
+  forgotLink: {
+    alignSelf: 'flex-end',
+    marginTop: 12,
+  },
+  forgotLinkText: {
+    ...typography.caption,
+    color: colors.primary,
+    fontWeight: '600',
   },
   errorBanner: {
     backgroundColor: '#FEF2F2',

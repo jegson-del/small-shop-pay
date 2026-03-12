@@ -15,3 +15,15 @@ export const API_BASE_URL =
   (typeof __DEV__ !== 'undefined' && __DEV__
     ? 'http://localhost:8000/api'
     : 'https://api.smallshoppay.com/api');
+
+/** Web app base URL – for linking to forgot password, contact, terms, settings. Set EXPO_PUBLIC_WEB_URL in .env */
+const webUrl =
+  typeof process.env.EXPO_PUBLIC_WEB_URL === 'string' && process.env.EXPO_PUBLIC_WEB_URL
+    ? process.env.EXPO_PUBLIC_WEB_URL.replace(/\/$/, '')
+    : '';
+
+export const WEB_BASE_URL =
+  webUrl ||
+  (typeof __DEV__ !== 'undefined' && __DEV__
+    ? 'http://localhost:5173'
+    : 'https://app.smallshoppay.com');

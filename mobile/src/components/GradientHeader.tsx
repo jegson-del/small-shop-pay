@@ -7,10 +7,11 @@ import { colors } from '@/theme/colors';
 type GradientHeaderProps = {
   title: string;
   subtitle?: string;
+  leftElement?: React.ReactNode;
   rightElement?: React.ReactNode;
 };
 
-export function GradientHeader({ title, subtitle, rightElement }: GradientHeaderProps) {
+export function GradientHeader({ title, subtitle, leftElement, rightElement }: GradientHeaderProps) {
   const insets = useSafeAreaInsets();
   const paddingTop = Math.max(insets.top, 12);
 
@@ -22,6 +23,7 @@ export function GradientHeader({ title, subtitle, rightElement }: GradientHeader
       style={[styles.gradient, { paddingTop }]}
     >
       <View style={styles.inner}>
+        {leftElement ? <View style={styles.leftElement}>{leftElement}</View> : null}
         <View style={styles.left}>
           <Text style={styles.title}>{title}</Text>
           {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
@@ -50,6 +52,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  leftElement: {
+    marginRight: 8,
   },
   left: {
     flex: 1,
