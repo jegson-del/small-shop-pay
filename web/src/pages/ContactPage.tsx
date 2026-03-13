@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { API_BASE } from '@/api/client';
 
 const inputBase =
   'w-full px-4 py-3 rounded-xl border bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow';
@@ -31,7 +32,7 @@ export function ContactPage() {
 
     setStatus('sending');
     try {
-      const res = await fetch('/api/contact', {
+      const res = await fetch(`${API_BASE}/contact`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({ name: name.trim(), email: email.trim(), message: message.trim() }),

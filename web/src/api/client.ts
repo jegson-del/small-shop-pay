@@ -1,7 +1,18 @@
 import { tokenStore } from './tokenStore';
 import { loginResponseSchema } from '@/schemas/auth';
 
-const API_BASE = '/api';
+/**
+ * API base URL – uses VITE_API_URL when set, otherwise:
+ * - development: /api (Vite proxy to local backend)
+ * - production: https://smallshoppay.org/api
+ */
+function getApiBase(): string {
+  const env = import.meta.env.VITE_API_URL;
+  if (typeof env === 'string' && env) return env.replace(/\/$/, '');
+  return import.meta.env.DEV ? '/api' : 'https://smallshoppay.org/api';
+}
+
+export const API_BASE = getApiBase();
 
 async function doRefresh(): Promise<void> {
   const refresh = tokenStore.getRefreshToken();

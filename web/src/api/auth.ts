@@ -1,4 +1,4 @@
-import { api } from './client';
+import { api, API_BASE } from './client';
 import { tokenStore } from './tokenStore';
 import {
   userSchema,
@@ -28,7 +28,7 @@ async function parseJsonOrThrow(res: Response, fallbackMessage: string): Promise
 
 /** Login – returns tokens; caller should update tokenStore and invalidate queries */
 export async function login(email: string, password: string): Promise<LoginResponse> {
-  const res = await fetch('/api/auth/login', {
+  const res = await fetch(`${API_BASE}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
@@ -50,7 +50,7 @@ export async function register(params: {
   terms_accepted: boolean;
   privacy_accepted: boolean;
 }): Promise<RegisterResponse> {
-  const res = await fetch('/api/auth/register', {
+  const res = await fetch(`${API_BASE}/auth/register`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -73,7 +73,7 @@ export async function refresh(): Promise<LoginResponse> {
   const refreshToken = tokenStore.getRefreshToken();
   if (!refreshToken) throw new Error('No refresh token');
 
-  const res = await fetch('/api/auth/refresh', {
+  const res = await fetch(`${API_BASE}/auth/refresh`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ refresh_token: refreshToken }),
@@ -110,7 +110,7 @@ export async function getMe(): Promise<User> {
 
 /** Forgot password – send OTP to email */
 export async function forgotPassword(email: string): Promise<void> {
-  const res = await fetch('/api/auth/forgot-password', {
+  const res = await fetch(`${API_BASE}/auth/forgot-password`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
     body: JSON.stringify({ email }),
@@ -126,7 +126,7 @@ export async function verifyForgotPasswordOtp(
   email: string,
   otp: string
 ): Promise<{ reset_token: string }> {
-  const res = await fetch('/api/auth/forgot-password/verify-otp', {
+  const res = await fetch(`${API_BASE}/auth/forgot-password/verify-otp`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
     body: JSON.stringify({ email, otp }),
@@ -146,7 +146,7 @@ export async function resetPassword(
   password: string,
   passwordConfirmation: string
 ): Promise<void> {
-  const res = await fetch('/api/auth/reset-password', {
+  const res = await fetch(`${API_BASE}/auth/reset-password`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
     body: JSON.stringify({
@@ -170,7 +170,7 @@ export async function sendRegistrationOtp(params: {
   terms_accepted: boolean;
   privacy_accepted: boolean;
 }): Promise<void> {
-  const res = await fetch('/api/auth/register/send-otp', {
+  const res = await fetch(`${API_BASE}/auth/register/send-otp`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -190,7 +190,7 @@ export async function verifyRegistrationOtp(
   email: string,
   otp: string
 ): Promise<RegisterResponse> {
-  const res = await fetch('/api/auth/register/verify-otp', {
+  const res = await fetch(`${API_BASE}/auth/register/verify-otp`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
