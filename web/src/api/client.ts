@@ -30,7 +30,7 @@ async function doRefresh(): Promise<void> {
   if (!res.ok) {
     tokenStore.clear();
     const data = await res.json().catch(() => ({}));
-    throw new Error(data?.message ?? 'Token refresh failed');
+    throw new Error((data?.message as string) ?? 'Token refresh failed');
   }
 
   const data = await res.json();
@@ -78,7 +78,7 @@ export async function apiRequest<T>(
   const data = await res.json().catch(() => null);
 
   if (!res.ok) {
-    const msg = data?.message ?? `Request failed: ${res.status}`;
+    const msg = (data?.message as string) ?? `Request failed: ${res.status}`;
     throw new Error(msg);
   }
 

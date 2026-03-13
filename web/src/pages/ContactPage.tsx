@@ -39,7 +39,7 @@ export function ContactPage() {
       });
       const data = (await res.json()) as { message?: string };
       if (!res.ok) {
-        throw new Error(data?.message ?? 'Failed to send message.');
+        throw new Error((data?.message as string) ?? 'Failed to send message.');
       }
       setStatus('success');
       setName('');

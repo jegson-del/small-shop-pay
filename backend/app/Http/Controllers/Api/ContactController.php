@@ -16,7 +16,7 @@ class ContactController extends Controller
     {
         $validated = $request->validated();
 
-        Mail::to('support@3ttechgroup.com')->send(new ContactFormMail(
+        Mail::to('support@smallshoppay.com')->send(new ContactFormMail(
             fromName: $validated['name'],
             fromEmail: $validated['email'],
             messageBody: $validated['message'],

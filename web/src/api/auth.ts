@@ -12,21 +12,21 @@ import {
 async function parseJsonOrThrow(res: Response, fallbackMessage: string): Promise<unknown> {
   const text = await res.text();
   if (!text) {
-    throw new Error(`${fallbackMessage} (API returned empty response – check backend is running on port 8000 and Vite proxy target)`);
+    throw new Error(`${fallbackMessage} (API returned empty response - check backend is running on port 8000 and Vite proxy target)`);
   }
   try {
     return JSON.parse(text);
   } catch {
-    const snippet = text.length > 120 ? text.slice(0, 120) + '…' : text;
+    const snippet = text.length > 120 ? text.slice(0, 120) + '...' : text;
     const looksLikeHtml = /^\s*</.test(text.trim());
     const hint = looksLikeHtml
-      ? ' – Response looks like HTML. Ensure Laravel backend is running (php artisan serve) and Vite proxy target is http://localhost:8000'
-      : ` – Response: "${snippet.replace(/"/g, "'")}"`;
-    throw new Error(`${fallbackMessage} (API returned invalid JSON – status ${res.status}${hint})`);
+      ? ' - Response looks like HTML. Ensure Laravel backend is running (php artisan serve) and Vite proxy target is http://localhost:8000'
+      : ` - Response: "${snippet.replace(/"/g, "'")}"`;
+    throw new Error(`${fallbackMessage} (API returned invalid JSON - status ${res.status}${hint})`);
   }
 }
 
-/** Login – returns tokens; caller should update tokenStore and invalidate queries */
+/** Login - returns tokens; caller should update tokenStore and invalidate queries */
 export async function login(email: string, password: string): Promise<LoginResponse> {
   const res = await fetch(`${API_BASE}/auth/login`, {
     method: 'POST',
@@ -42,7 +42,7 @@ export async function login(email: string, password: string): Promise<LoginRespo
   return loginResponseSchema.parse(data);
 }
 
-/** Register – does not return tokens; user must login after */
+/** Register - does not return tokens; user must login after */
 export async function register(params: {
   email: string;
   email_confirmation: string;
@@ -62,13 +62,13 @@ export async function register(params: {
 
   const data = (await parseJsonOrThrow(res, 'Registration failed')) as Record<string, unknown>;
   if (!res.ok) {
-    throw new Error(data?.message ?? 'Registration failed');
+    throw new Error((data?.message as string) ?? 'Registration failed');
   }
 
   return registerResponseSchema.parse(data);
 }
 
-/** Refresh – used internally by client; exported for explicit refresh if needed */
+/** Refresh - used internally by client; exported for explicit refresh if needed */
 export async function refresh(): Promise<LoginResponse> {
   const refreshToken = tokenStore.getRefreshToken();
   if (!refreshToken) throw new Error('No refresh token');
@@ -82,13 +82,13 @@ export async function refresh(): Promise<LoginResponse> {
   const data = (await parseJsonOrThrow(res, 'Token refresh failed')) as Record<string, unknown>;
   if (!res.ok) {
     tokenStore.clear();
-    throw new Error(data?.message ?? 'Refresh failed');
+    throw new Error((data?.message as string) ?? 'Refresh failed');
   }
 
   return loginResponseSchema.parse(data);
 }
 
-/** Logout – revokes refresh token */
+/** Logout - revokes refresh token */
 export async function logout(): Promise<void> {
   const refreshToken = tokenStore.getRefreshToken();
   if (refreshToken) {
@@ -102,13 +102,13 @@ export async function logout(): Promise<void> {
   }
 }
 
-/** Get current user – requires valid access token */
+/** Get current user - requires valid access token */
 export async function getMe(): Promise<User> {
   const data = await api.get<unknown>('/auth/me');
   return userSchema.parse(data);
 }
 
-/** Forgot password – send OTP to email */
+/** Forgot password - send OTP to email */
 export async function forgotPassword(email: string): Promise<void> {
   const res = await fetch(`${API_BASE}/auth/forgot-password`, {
     method: 'POST',
@@ -121,7 +121,7 @@ export async function forgotPassword(email: string): Promise<void> {
   }
 }
 
-/** Verify forgot-password OTP – returns reset_token */
+/** Verify forgot-password OTP - returns reset_token */
 export async function verifyForgotPasswordOtp(
   email: string,
   otp: string
@@ -161,7 +161,7 @@ export async function resetPassword(
   }
 }
 
-/** Send registration OTP – step 1 of registration */
+/** Send registration OTP - step 1 of registration */
 export async function sendRegistrationOtp(params: {
   email: string;
   email_confirmation: string;
@@ -185,7 +185,7 @@ export async function sendRegistrationOtp(params: {
   }
 }
 
-/** Verify registration OTP – step 2, completes registration */
+/** Verify registration OTP - step 2, completes registration */
 export async function verifyRegistrationOtp(
   email: string,
   otp: string
