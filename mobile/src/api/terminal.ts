@@ -25,10 +25,15 @@ export async function getTerminalConfig(): Promise<{ location_id: string | null 
   return { location_id: res?.location_id ?? null };
 }
 
-export async function createPaymentIntent(amountPence: number, currency = 'gbp'): Promise<CreatePaymentIntentResponse> {
+export async function createPaymentIntent(
+  amountPence: number,
+  currency = 'gbp',
+  receiptEmail?: string | null
+): Promise<CreatePaymentIntentResponse> {
   const res = await api.post<CreatePaymentIntentResponse>('/terminal/payment_intent', {
     amount: amountPence,
     currency,
+    ...(receiptEmail ? { receipt_email: receiptEmail } : {}),
   });
   if (!res?.client_secret) throw new Error('Failed to create payment');
   return res;

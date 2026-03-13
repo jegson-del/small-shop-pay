@@ -11,14 +11,15 @@ import {
   StyleSheet,
   Linking,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/contexts/AuthContext';
 import { API_BASE_URL, WEB_BASE_URL } from '@/config/api';
 import { colors } from '@/theme/colors';
 import { typography } from '@/theme/typography';
 
-const CARD_RADIUS = 20;
-const INPUT_RADIUS = 12;
+const CARD_RADIUS = 24;
+const INPUT_RADIUS = 14;
 
 export function LoginScreen() {
   const { login } = useAuth();
@@ -65,24 +66,38 @@ export function LoginScreen() {
   ];
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['bottom']}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardView}
-      >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
+    <View style={styles.safeArea}>
+      <LinearGradient
+        colors={['#f8fafc', '#f1f5f9', '#e2e8f0']}
+        style={StyleSheet.absoluteFill}
+        pointerEvents="none"
+      />
+      <View style={styles.shapeBg} pointerEvents="none">
+        <View style={[styles.shape, styles.shape1]} />
+        <View style={[styles.shape, styles.shape2]} />
+        <View style={[styles.shape, styles.shape3]} />
+        <View style={[styles.shape, styles.shape4]} />
+        <View style={[styles.shape, styles.shape5]} />
+      </View>
+      <SafeAreaView style={styles.safeContent} edges={['bottom']}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.keyboardView}
         >
-          <View style={styles.hero}>
-            <Text style={styles.heroTitle}>Welcome back</Text>
-            <Text style={styles.heroSubtitle}>
-              Sign in to continue to SmallShopPay
-            </Text>
-          </View>
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.hero}>
+              <Text style={styles.heroTitle}>Welcome back</Text>
+              <Text style={styles.heroSubtitle}>
+                <Text style={styles.heroSubtitleWhite}>Sign in to continue</Text>
+                <Text style={styles.heroSubtitleDark}> to SmallShopPay</Text>
+              </Text>
+            </View>
 
-          <View style={styles.card}>
+            <View style={styles.card}>
             <Text style={styles.label}>Email</Text>
             <TextInput
               value={email}
@@ -142,14 +157,21 @@ export function LoginScreen() {
             <TouchableOpacity
               onPress={handleLogin}
               disabled={loading}
-              activeOpacity={0.85}
-              style={[styles.button, loading && styles.buttonDisabled]}
+              activeOpacity={0.9}
+              style={[styles.buttonWrap, loading && styles.buttonDisabled]}
             >
-              {loading ? (
-                <ActivityIndicator color="#fff" size="small" />
-              ) : (
-                <Text style={styles.buttonLabel}>Log in</Text>
-              )}
+              <LinearGradient
+                colors={[colors.primary, colors.stripe]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.button}
+              >
+                {loading ? (
+                  <ActivityIndicator color="#fff" size="small" />
+                ) : (
+                  <Text style={styles.buttonLabel}>Log in</Text>
+                )}
+              </LinearGradient>
             </TouchableOpacity>
           </View>
 
@@ -164,13 +186,60 @@ export function LoginScreen() {
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: colors.surface,
+  },
+  safeContent: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
+  shapeBg: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  shape: {
+    position: 'absolute',
+    borderRadius: 999,
+    opacity: 0.5,
+  },
+  shape1: {
+    width: 280,
+    height: 280,
+    backgroundColor: colors.primary,
+    top: -80,
+    right: -100,
+  },
+  shape2: {
+    width: 200,
+    height: 200,
+    backgroundColor: colors.stripe,
+    top: 120,
+    left: -80,
+  },
+  shape3: {
+    width: 160,
+    height: 160,
+    backgroundColor: colors.accent,
+    top: 280,
+    right: -40,
+  },
+  shape4: {
+    width: 100,
+    height: 100,
+    backgroundColor: colors.primary,
+    bottom: 180,
+    left: -30,
+  },
+  shape5: {
+    width: 80,
+    height: 80,
+    backgroundColor: colors.stripe,
+    bottom: 80,
+    right: 60,
   },
   keyboardView: {
     flex: 1,
@@ -178,37 +247,49 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 24,
-    paddingTop: 8,
+    paddingTop: 24,
     paddingBottom: 32,
     justifyContent: 'center',
     minHeight: '100%',
   },
   hero: {
-    marginBottom: 28,
+    marginBottom: 32,
   },
   heroTitle: {
     ...typography.h1,
+    fontSize: 32,
+    letterSpacing: -0.5,
     color: colors.textPrimary,
-    marginBottom: 8,
+    marginBottom: 10,
   },
   heroSubtitle: {
     ...typography.body,
-    color: colors.textSecondary,
-    fontSize: 16,
+    fontSize: 17,
+    lineHeight: 24,
+  },
+  heroSubtitleWhite: {
+    color: colors.accent,
+    fontWeight: '700',
+  },
+  heroSubtitleDark: {
+    color: colors.textPrimary,
+    fontWeight: '500',
   },
   card: {
     backgroundColor: colors.background,
     borderRadius: CARD_RADIUS,
-    padding: 24,
+    padding: 28,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.04)',
     ...Platform.select({
       ios: {
         shadowColor: '#0F172A',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.06,
-        shadowRadius: 12,
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.08,
+        shadowRadius: 24,
       },
       android: {
-        elevation: 4,
+        elevation: 8,
       },
     }),
   },
@@ -221,18 +302,19 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   input: {
-    backgroundColor: colors.surface,
+    backgroundColor: '#f8fafc',
     borderRadius: INPUT_RADIUS,
     borderWidth: 1.5,
-    borderColor: 'transparent',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    borderColor: '#e2e8f0',
+    paddingHorizontal: 18,
+    paddingVertical: 16,
     fontSize: 16,
     color: colors.textPrimary,
   },
   inputFocused: {
     borderColor: colors.primary,
-    backgroundColor: colors.background,
+    borderWidth: 2,
+    backgroundColor: '#fff',
   },
   inputError: {
     borderColor: colors.error,
@@ -267,39 +349,43 @@ const styles = StyleSheet.create({
     ...typography.bodySmall,
     color: colors.error,
   },
-  button: {
-    backgroundColor: colors.primary,
+  buttonWrap: {
+    marginTop: 28,
     borderRadius: INPUT_RADIUS,
-    paddingVertical: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 52,
-    marginTop: 24,
+    overflow: 'hidden',
     ...Platform.select({
       ios: {
         shadowColor: colors.primary,
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
       },
       android: {
-        elevation: 2,
+        elevation: 4,
       },
     }),
+  },
+  button: {
+    paddingVertical: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 56,
+    borderRadius: INPUT_RADIUS,
   },
   buttonDisabled: {
     opacity: 0.8,
   },
   buttonLabel: {
-    ...typography.label,
-    fontSize: 16,
+    fontSize: 17,
+    fontWeight: '600',
     color: '#fff',
   },
   footer: {
     ...typography.caption,
     color: colors.textSecondary,
     textAlign: 'center',
-    marginTop: 24,
+    marginTop: 28,
+    lineHeight: 18,
   },
   apiDebug: {
     ...typography.caption,

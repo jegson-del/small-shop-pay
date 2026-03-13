@@ -8,6 +8,17 @@ import {
 } from '@/schemas/auth';
 import { API_BASE_URL } from '@/config/api';
 
+/** Parse JSON from response; if body is HTML (e.g. 404/500 page), throw a clear error */
+async function parseJsonOrThrow(res: Response): Promise<unknown> {
+  try {
+    return await res.json();
+  } catch {
+    throw new Error(
+      'Server returned non-JSON. Check EXPO_PUBLIC_API_URL in mobile/.env (e.g. http://YOUR_IP:8000/api for php artisan serve).'
+    );
+  }
+}
+
 /** Refresh – get new tokens from refresh_token in keychain; stores them on success */
 export async function refresh(): Promise<LoginResponse> {
   const refreshToken = await tokenStore.getRefreshTokenAsync();
@@ -19,7 +30,7 @@ export async function refresh(): Promise<LoginResponse> {
     body: JSON.stringify({ refresh_token: refreshToken }),
   });
 
-  const data = await res.json();
+  const data = await parseJsonOrThrow(res);
   if (!res.ok) {
     await tokenStore.clear();
     throw new Error(data?.message ?? 'Refresh failed');
@@ -38,7 +49,7 @@ export async function login(email: string, password: string): Promise<LoginRespo
     body: JSON.stringify({ email, password }),
   });
 
-  const data = await res.json();
+  const data = await parseJsonOrThrow(res);
   if (!res.ok) {
     throw new Error(data?.message ?? 'Login failed');
   }

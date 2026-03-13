@@ -146,18 +146,24 @@ final class TerminalController extends Controller
 
         $amount = (int) $request->validated('amount');
         $currency = strtolower((string) ($request->validated('currency') ?? 'gbp'));
+        $receiptEmail = $request->validated('receipt_email');
+
+        $params = [
+            'amount' => $amount,
+            'currency' => $currency,
+            'capture_method' => 'automatic',
+            'payment_method_types' => ['card_present'],
+            'metadata' => [
+                'user_id' => $user->id,
+            ],
+        ];
+        if ($receiptEmail !== null && $receiptEmail !== '') {
+            $params['receipt_email'] = $receiptEmail;
+        }
 
         try {
             $intent = $this->stripe->paymentIntents->create(
-                [
-                    'amount' => $amount,
-                    'currency' => $currency,
-                    'capture_method' => 'automatic',
-                    'payment_method_types' => ['card_present'],
-                    'metadata' => [
-                        'user_id' => $user->id,
-                    ],
-                ],
+                $params,
                 ['stripe_account' => $accountId]
             );
 

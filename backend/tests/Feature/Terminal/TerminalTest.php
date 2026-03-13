@@ -120,4 +120,21 @@ class TerminalTest extends TestCase
 
         $response->assertStatus(422);
     }
+
+    public function test_payment_intent_validates_receipt_email_format(): void
+    {
+        $user = User::factory()->create([
+            'stripe_account_id' => 'acct_test',
+            'subscription_status' => 'trialing',
+            'app_access' => true,
+        ]);
+
+        $response = $this->actingAs($user, 'sanctum')->postJson('/api/terminal/payment_intent', [
+            'amount' => 1000,
+            'currency' => 'gbp',
+            'receipt_email' => 'not-a-valid-email',
+        ]);
+
+        $response->assertStatus(422);
+    }
 }

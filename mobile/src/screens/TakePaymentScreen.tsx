@@ -10,6 +10,10 @@ import {
   PermissionsAndroid,
   Modal,
   Pressable,
+  Switch,
+  TextInput,
+  KeyboardAvoidingView,
+  ScrollView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
@@ -158,6 +162,8 @@ export function TakePaymentScreen() {
   const [processingPhase, setProcessingPhase] = useState<'connecting' | 'present_card' | null>(null);
   const [result, setResult] = useState<'idle' | 'ready' | 'succeeded' | 'failed' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [receiptByEmail, setReceiptByEmail] = useState(false);
+  const [receiptEmail, setReceiptEmail] = useState('');
 
   const resetForAnother = () => {
     setResult('idle');
@@ -201,14 +207,16 @@ export function TakePaymentScreen() {
       throw new Error('Stripe Terminal location missing. Connect your Stripe account and try again.');
     }
 
-    // Tap to Pay only (device NFC). Use simulated: false for real NFC; never mix with simulated.
+    // Tap to Pay: simulated in dev (debug builds), production in release (real NFC payments).
+    // Stripe does not allow production Tap to Pay with debug builds.
+    const useSimulated = __DEV__;
     if (__DEV__) {
-      console.log('[TakePayment] Discovering tapToPay, simulated: false, location:', backendLocationId);
+      console.log('[TakePayment] Discovering tapToPay, simulated:', useSimulated, 'location:', backendLocationId);
     }
     discoveredReadersRef.current = [];
     const { error } = await discoverReaders({
       discoveryMethod: 'tapToPay',
-      simulated: false,
+      simulated: useSimulated,
     });
     if (error) {
       throw new Error(error.message ?? 'Failed to discover Tap to Pay reader.');
@@ -249,7 +257,8 @@ export function TakePaymentScreen() {
 
       setProcessingPhase('present_card');
 
-      const { client_secret } = await createPaymentIntent(pence, 'gbp');
+      const receiptToSend = receiptByEmail && receiptEmail.trim() ? receiptEmail.trim() : undefined;
+      const { client_secret } = await createPaymentIntent(pence, 'gbp', receiptToSend);
 
       const retrieveResult = await retrievePaymentIntent(client_secret);
       if (retrieveResult.error || !retrieveResult.paymentIntent) {
@@ -358,7 +367,17 @@ export function TakePaymentScreen() {
         </Pressable>
       </Modal>
 
-    <View style={styles.content}>
+    <KeyboardAvoidingView
+      style={styles.keyboardAvoid}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+    >
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
       <View style={styles.amountSection}>
         <Text style={styles.label}>Amount (GBP)</Text>
         <View style={styles.amountDisplay} accessibilityLabel="Amount in pounds">
@@ -371,6 +390,32 @@ export function TakePaymentScreen() {
           editable={result === 'idle' || result === 'error'}
         />
       </View>
+
+        <View style={styles.receiptSection}>
+          <View style={styles.receiptRow}>
+            <Text style={styles.label}>Send receipt by email?</Text>
+            <Switch
+              value={receiptByEmail}
+              onValueChange={setReceiptByEmail}
+              trackColor={{ false: '#e2e8f0', true: colors.primary }}
+              thumbColor="#fff"
+              disabled={result !== 'idle' && result !== 'error'}
+            />
+          </View>
+          {receiptByEmail && (
+            <TextInput
+              style={styles.emailInput}
+              placeholder="Customer email"
+              placeholderTextColor={colors.textSecondary}
+              value={receiptEmail}
+              onChangeText={setReceiptEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              editable={result === 'idle' || result === 'error'}
+            />
+          )}
+        </View>
 
         {errorMessage && result !== 'ready' && (
           <View style={styles.errorBox}>
@@ -424,7 +469,8 @@ export function TakePaymentScreen() {
             <Text style={styles.backButtonText}>Back to Home</Text>
           </TouchableOpacity>
         )}
-      </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
     </View>
   );
 }
@@ -494,13 +540,39 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     marginBottom: 8,
   },
-  content: {
+  keyboardAvoid: {
     flex: 1,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
     padding: 24,
     paddingTop: 16,
+    paddingBottom: 120,
   },
   amountSection: {
     marginBottom: 24,
+  },
+  receiptSection: {
+    marginBottom: 24,
+  },
+  receiptRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  emailInput: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+    color: colors.textPrimary,
   },
   amountDisplay: {
     flexDirection: 'row',

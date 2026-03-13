@@ -19,6 +19,7 @@ class CreatePaymentIntentRequest extends FormRequest
         return [
             'amount' => ['required', 'integer', 'min:1'], // amount in smallest currency unit (e.g. pence)
             'currency' => ['sometimes', 'string', 'size:3', 'in:gbp,eur,usd'],
+            'receipt_email' => ['sometimes', 'nullable', 'email'],
         ];
     }
 
